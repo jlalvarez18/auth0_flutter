@@ -1,7 +1,30 @@
 part of auth0_flutter;
 
-void _processJSONForErrors(Map<String, dynamic> result) {
-  final Map<String, dynamic> error = result['error'];
+// Top Level error
+// {
+//   "error": {
+//     "type": "authentication" | "credentials",
+//   }
+// }
+
+// Authentication error
+/**
+ * {
+ * "info": Object,
+ * "status_code": int
+ * }
+ */
+
+// Credentials error
+/**
+ * {
+ * "error_type": "no_credentials" | "no_refresh_token" | "failed_refresh" |"touch_failed",
+ * "error_description": String
+ * }
+ */
+
+void _processJSONForErrors(Map<String, dynamic> json) {
+  final Map<String, dynamic> error = json['error'];
 
   if (error == null) {
     return null;
@@ -9,11 +32,11 @@ void _processJSONForErrors(Map<String, dynamic> result) {
 
   final String errorType = error['type'];
 
-  if (errorType == 'authentication_error') {
-    throw AuthenticationError.fromJSON(error, error['status_code']);
+  if (errorType == 'authentication') {
+    throw AuthenticationError.fromJSON(error);
   }
 
-  if (errorType == 'credentials_error') {
+  if (errorType == 'credentials') {
     throw CredentialsError.fromJSON(error);
   }
 }

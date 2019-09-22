@@ -7,6 +7,13 @@ enum CredentialErrorType {
   touchFailed
 }
 
+final _hash = <String, CredentialErrorType>{
+  'no_credentials': CredentialErrorType.noCredentials,
+  'no_refresh_token': CredentialErrorType.noRefreshToken,
+  'failed_refresh': CredentialErrorType.failedRefresh,
+  'touch_failed': CredentialErrorType.touchFailed
+};
+
 class CredentialsError {
   final CredentialErrorType type;
   final String description;
@@ -14,21 +21,11 @@ class CredentialsError {
   CredentialsError({this.type, this.description});
 
   factory CredentialsError.fromJSON(Map<String, dynamic> json) {
-    final typeString = json['credentials_error_type'] as String;
+    final typeString = json['error_type'] as String;
 
-    CredentialErrorType type;
+    final type = _hash[typeString];
 
-    if (typeString == 'no_credentials') {
-      type = CredentialErrorType.noCredentials;
-    } else if (typeString == 'no_refresh_token') {
-      type = CredentialErrorType.noRefreshToken;
-    } else if (typeString == 'failed_refresh') {
-      type = CredentialErrorType.failedRefresh;
-    } else if (typeString == 'touch_failed') {
-      type = CredentialErrorType.touchFailed;
-    }
-
-    final description = json['credentials_error_description'] as String;
+    final description = json['error_description'] as String;
 
     return CredentialsError(type: type, description: description);
   }
