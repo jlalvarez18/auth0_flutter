@@ -1,3 +1,5 @@
+part of auth0_flutter;
+
 class AuthenticationError {
   final Map<String, dynamic> info;
   final int statusCode;

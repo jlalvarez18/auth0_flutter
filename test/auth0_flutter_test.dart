@@ -16,6 +16,6 @@ void main() {
   });
 
   test('getPlatformVersion', () async {
-    expect(await Auth0Flutter.platformVersion, '42');
+    expect(await Auth0.platformVersion, '42');
   });
 }

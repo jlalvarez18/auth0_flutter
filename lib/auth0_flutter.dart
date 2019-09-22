@@ -2,7 +2,6 @@ library auth0_flutter;
 
 import 'dart:async';
 
-import 'package:auth0_flutter/src/authentication_error.dart';
 import 'package:auth0_flutter/src/identity.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -16,8 +15,12 @@ part 'src/profile.dart';
 part 'src/user_info.dart';
 part 'src/users.dart';
 part 'src/user_patch_attributes.dart';
+part 'src/error_handling.dart';
+part 'src/authentication_error.dart';
+part 'src/credentials_manager.dart';
+part 'src/credentials_error.dart';
 
-class Auth0Flutter {
+class Auth0 {
   static const MethodChannel _channel = const MethodChannel('auth0_flutter');
 
   static Future<String> get platformVersion async {

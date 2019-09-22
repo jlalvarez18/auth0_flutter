@@ -25,7 +25,7 @@ class _MyAppState extends State<MyApp> {
     String platformVersion;
     // Platform messages may fail, so we use a try/catch PlatformException.
     try {
-      platformVersion = await Auth0Flutter.platformVersion;
+      platformVersion = await Auth0.platformVersion;
     } on PlatformException {
       platformVersion = 'Failed to get platform version.';
     }
@@ -38,6 +38,12 @@ class _MyAppState extends State<MyApp> {
     setState(() {
       _platformVersion = platformVersion;
     });
+  }
+
+  Future<Credentials> webAuth() async {
+    return Auth0.webAuth(clientId: '', domain: '')
+        .scope('openid email offline_access')
+        .start();
   }
 
   @override

@@ -27,14 +27,6 @@ class Authentication {
       {@required this.clientId, @required this.domain, MethodChannel channel})
       : _channel = channel;
 
-  void _processJSONForErrors(Map<String, dynamic> result) {
-    final Map<String, dynamic> error = result['error'];
-    if (error != null) {
-      throw AuthenticationError.fromJSON(error, result['error_code']);
-    }
-    return null;
-  }
-
   Future<Credentials> login(
       {@required String usernameOrEmail,
       @required String password,
@@ -279,6 +271,6 @@ class Authentication {
 
   WebAuth webAuthWithConnection(String connection) {
     return WebAuth._(clientId: clientId, domain: domain, channel: _channel)
-      ..connection = connection;
+        .connection(connection);
   }
 }

@@ -24,6 +24,17 @@ class Credentials {
         this.idToken = json['id_token'],
         this.scope = json['scope'];
 
+  Map<String, dynamic> toJSON() {
+    return <String, dynamic>{
+      'access_token': accessToken,
+      'token_type': tokenType,
+      'expires_in': expiresIn.toIso8601String(),
+      'refresh_token': refreshToken,
+      'id_token': idToken,
+      'scope': scope
+    };
+  }
+
   static DateTime _dateFromValue(dynamic value) {
     if (value is String) {
       final seconds = int.parse(value);
