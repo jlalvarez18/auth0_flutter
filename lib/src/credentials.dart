@@ -28,7 +28,7 @@ class Credentials {
     return <String, dynamic>{
       'access_token': accessToken,
       'token_type': tokenType,
-      'expires_in': expiresIn.toIso8601String(),
+      'expires_in': DateTime.now().difference(expiresIn).inSeconds,
       'refresh_token': refreshToken,
       'id_token': idToken,
       'scope': scope

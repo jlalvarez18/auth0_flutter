@@ -29,13 +29,13 @@ class Profile {
       this.identities});
 
   factory Profile.fromJSON(Map<String, dynamic> json) {
-    final String id = json['user_id'] ?? json['sub'];
+    final String id = json['id'];
     final String name = json['name'];
     final String nickname = json['nickname'];
 
-    final pictureUrl = Uri.tryParse(json['picture']);
+    final pictureUrl = Uri.tryParse(json['pictureURL']);
 
-    final dateString = json['created_at'] ?? json['updated_at'];
+    final String dateString = json['createdAt'];
     final createdAt = dateFromString(dateString);
 
     if (id == null &&
@@ -59,9 +59,9 @@ class Profile {
         pictureURL: pictureUrl,
         createdAt: createdAt,
         email: json['email'],
-        emailVerified: json['email_verified'] ?? false,
-        givenName: json['given_name'],
-        familyName: json['family_name'],
+        emailVerified: json['emailVerified'] ?? false,
+        givenName: json['givenName'],
+        familyName: json['familyName'],
         identities: identities,
         additionalAttributes: attributes);
   }

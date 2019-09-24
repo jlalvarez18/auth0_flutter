@@ -23,20 +23,20 @@ part of auth0_flutter;
  * }
  */
 
-void _processJSONForErrors(Map<String, dynamic> json) {
-  final Map<String, dynamic> error = json['error'];
+// void _processJSONForErrors(Map<String, dynamic> json) {
+//   final Map<String, dynamic> error = json['error'];
 
-  if (error == null) {
-    return null;
-  }
+//   if (error == null) {
+//     return null;
+//   }
 
-  final String errorType = error['type'];
+//   final String errorType = error['type'];
 
-  if (errorType == 'authentication') {
-    throw AuthenticationError.fromJSON(error);
-  }
+//   if (errorType == 'authentication') {
+//     throw AuthenticationError.fromJSON(error);
+//   }
 
-  if (errorType == 'credentials') {
-    throw CredentialsError.fromJSON(error);
-  }
-}
+//   if (errorType == 'credentials') {
+//     throw CredentialsError.fromJSON(error);
+//   }
+// }

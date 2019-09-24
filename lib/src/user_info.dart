@@ -42,8 +42,8 @@ class UserInfo {
   final String gender;
   final String birthdate;
 
-  final String zoneinfo;
-  final String locale;
+  final String zoneinfoIdentifier;
+  final String localeIdentifier;
 
   final String phoneNumber;
   final bool phoneNumberVerified;
@@ -68,8 +68,8 @@ class UserInfo {
       this.emailVerified,
       this.gender,
       this.birthdate,
-      this.zoneinfo,
-      this.locale,
+      this.zoneinfoIdentifier,
+      this.localeIdentifier,
       this.phoneNumber,
       this.phoneNumberVerified,
       this.address,
@@ -84,24 +84,24 @@ class UserInfo {
     }
 
     final name = json['name'];
-    final givenName = json['given_name'];
-    final familyName = json['family_name'];
-    final middleName = json['middle_name'];
+    final givenName = json['givenName'];
+    final familyName = json['familyName'];
+    final middleName = json['middleName'];
     final nickname = json['nickname'];
-    final preferredUsername = json['preferred_username'];
+    final preferredUsername = json['preferredUsername'];
     final profile = Uri.tryParse(json['profile']);
     final picture = Uri.tryParse(json['picture']);
     final website = Uri.tryParse(json['website']);
     final email = json['email'];
-    final emailVerified = json['email_verified'];
+    final emailVerified = json['emailVerified'];
     final gender = json['gender'];
     final birthdate = json['birthdate'];
     final zoneinfo = json['zoneinfo'];
     final locale = json['locale'];
-    final phoneNumber = json['phone_number'];
-    final phoneNumberVerified = json['phone_number_verified'];
+    final phoneNumber = json['phoneNumber'];
+    final phoneNumberVerified = json['phoneNumberVerified'];
     final address = json['address'];
-    final updatedAt = dateFromString(json['updated_at']);
+    final updatedAt = dateFromString(json['updatedAt']);
 
     final customClaims = Map.fromEntries(json.entries);
     UserInfo.publicClaims.forEach((v) => customClaims.remove(v));
@@ -121,8 +121,8 @@ class UserInfo {
         emailVerified: emailVerified,
         gender: gender,
         birthdate: birthdate,
-        zoneinfo: zoneinfo,
-        locale: locale,
+        zoneinfoIdentifier: zoneinfo,
+        localeIdentifier: locale,
         phoneNumber: phoneNumber,
         phoneNumberVerified: phoneNumberVerified,
         address: address,

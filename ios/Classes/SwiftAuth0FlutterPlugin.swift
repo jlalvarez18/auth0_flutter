@@ -2,7 +2,14 @@ import Flutter
 import UIKit
 import Auth0
 
+private func unknownMethodError(_ methodName: String) -> FlutterError {
+    return FlutterError(code: "", message: "Unknown method name: \(methodName)", details: nil)
+}
+
+typealias Auth0ControllerCompletion = (Any?, Error?) -> Void
+
 public class SwiftAuth0FlutterPlugin: NSObject, FlutterPlugin {
+    
     public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(name: "auth0_flutter", binaryMessenger: registrar.messenger())
         let instance = SwiftAuth0FlutterPlugin()
@@ -11,79 +18,73 @@ public class SwiftAuth0FlutterPlugin: NSObject, FlutterPlugin {
     
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         let methodArgs = call.method.split(separator: ".")
-        
-        guard let type = MethodType(rawValue: String(methodArgs[0])) else {
+
+        guard methodArgs.count == 2 else {
+            result(unknownMethodError(call.method))
             return
         }
+
+        let domainValue = String(methodArgs[0])
+        let methodNameValue = String(methodArgs[1])
+
+        guard let type = Domain(rawValue: domainValue) else {
+            result(unknownMethodError(domainValue))
+            return
+        }
+
+        let arguments = call.arguments ?? [:]
         
+        let completion: Auth0ControllerCompletion = { (data, error) in
+            sendResult(result, data: data, error: error)
+        }
+
         switch type {
         case .auth0:
-            guard let method = Auth0Method(rawValue: String(methodArgs[1])) else {
+            guard let method = Auth0Method(rawValue: methodNameValue) else {
+                result(unknownMethodError(methodNameValue))
                 return
             }
-            
-            handle(method: method, args: call.arguments, result: result)
+
+            handleRoot(method: method, args: arguments, completion: completion)
+
         case .webAuth:
-            guard let method = WebAuthMethod(rawValue: String(methodArgs[1])) else {
+            guard let method = WebAuthController.MethodName(rawValue: methodNameValue) else {
+                result(unknownMethodError(methodNameValue))
                 return
             }
-            
-            handleWebAuth(method, arguments: call.arguments ?? [:], completion: result)
+
+            WebAuthController.handle(method, arguments: arguments, completion: completion)
+
         case .authentication:
-            break
+            guard let method = AuthenticationController.MethodName(rawValue: methodNameValue) else {
+                result(unknownMethodError(methodNameValue))
+                return
+            }
+
+            AuthenticationController.handle(method, arguments: arguments, completion: completion)
+
         case .credentialsManager:
-            break
+            guard let method = CredentialsManagerController.MethodName(rawValue: methodNameValue) else {
+                result(unknownMethodError(methodNameValue))
+                return
+            }
+
+            CredentialsManagerController.handle(method, arguments: arguments, completion: completion)
         }
     }
     
-    func handleWebAuth(_ method: WebAuthMethod, arguments: Any, completion: @escaping FlutterResult) {
-        let decoder = JSONDecoder();
-        
-        var args: WebAuthArguments
-        
-        do {
-            let data = try JSONSerialization.data(withJSONObject: arguments, options: [])
-            args = try decoder.decode(WebAuthArguments.self, from: data)
-        } catch {
-            completion(FlutterError(code: "", message: "Unable to serialize arguments", details: nil))
-           return
-        }
-        
-        switch method {
-        case .start:
-            args.webAuth().start { (result) in
-                switch result {
-                case .success(let credentials):
-                    completion(credentialsToJSON(credentials: credentials))
-                    
-                case .failure(let error):
-                    let e = error as! WebAuthError
-                    
-                    completion(FlutterError(code: "", message: e.localizedDescription, details: e.errorUserInfo))
-                }
-            }
-            
-        case .clearSession:
-            let dict = arguments as? [String: Bool] ?? [:]
-            
-            args.webAuth().clearSession(federated: dict["federated"] ?? false) { (success) in
-                completion(success)
-            }
-        }
-    }
-    
-    func handle(method: Auth0Method, args: Any?, result: @escaping FlutterResult) {
+    func handleRoot(method: Auth0Method, args: Any?, completion: @escaping Auth0ControllerCompletion) {
         switch method {
         case .resumeAuth:
-            result("")
+            completion("", nil)
             
         case .getPlatformVersion:
-            result("iOS " + UIDevice.current.systemVersion)
+            completion("iOS \(UIDevice.current.systemVersion)", nil)
         }
     }
 }
 
-func credentialsToJSON(credentials: Credentials) -> [String: Any] {
+func credentialsToJSON(_ credentials: Credentials) -> [String: Any] {
     let json: [String : Any?] = [
         "access_token": credentials.accessToken,
         "token_type": credentials.tokenType,
@@ -98,50 +99,100 @@ func credentialsToJSON(credentials: Credentials) -> [String: Any] {
     return result
 }
 
-struct WebAuthArguments: Decodable {
-    let clientId: String
-    let domain: String
+func databaseUserToJSON(_ user: DatabaseUser) -> [String: Any] {
+    let json: [String: Any?] = [
+        "email": user.email,
+        "username": user.username,
+        "verified": user.verified
+    ]
     
-    let universalLink: Bool
-    let responseType: [String]?
-    let nonce: String?
-    let parameters: [String: String]
+    let result = json.compactMapValues { $0 }
     
-    func webAuth() -> WebAuth {
-        let auth = Auth0.webAuth(clientId: self.clientId, domain: self.domain)
-        
-        if universalLink {
-            _ = auth.useUniversalLink()
+    return result
+}
+
+func identityToJSON(_ identity: Identity) -> [String: Any] {
+    let json: [String: Any?] = [
+        "identifier": identity.identifier,
+        "provider": identity.provider,
+        "connection": identity.connection,
+        "social": identity.social,
+        "profileData": identity.profileData,
+        "accessToken": identity.accessToken,
+        "expiresIn": identity.expiresIn?.timeIntervalSince1970,
+        "accessTokenSecret": identity.accessTokenSecret
+    ]
+    
+    let result = json.compactMapValues { $0 }
+    
+    return result
+}
+
+func profileToJSON(_ profile: Profile) -> [String: Any] {
+    let json: [String: Any?] = [
+        "id": profile.id,
+        "name": profile.name,
+        "nickname": profile.nickname,
+        "pictureURL": profile.pictureURL.absoluteString,
+        "createdAt": profile.createdAt.timeIntervalSince1970,
+        "email": profile.email,
+        "emailVerified": profile.emailVerified,
+        "givenName": profile.givenName,
+        "familyName": profile.familyName,
+        "additionalAttributes": profile.additionalAttributes,
+        "identities": profile.identities.map { identityToJSON($0) },
+    ]
+    
+    let result = json.compactMapValues { $0 }
+    
+    return result
+}
+
+func userInfoToJSON(_ userInfo: UserInfo) -> [String: Any] {
+    let json: [String: Any?] = [
+        "sub": userInfo.sub,
+        "name": userInfo.name,
+        "givenName": userInfo.givenName,
+        "familyName": userInfo.familyName,
+        "middleName": userInfo.middleName,
+        "nickname": userInfo.nickname,
+        "preferredUsername": userInfo.preferredUsername,
+        "profile": userInfo.profile?.absoluteString,
+        "picture": userInfo.picture?.absoluteString,
+        "website": userInfo.website?.absoluteString,
+        "email": userInfo.email,
+        "emailVerified": userInfo.emailVerified,
+        "gender": userInfo.gender,
+        "birthdate": userInfo.birthdate,
+        "zoneinfo": userInfo.zoneinfo?.identifier,
+        "locale": userInfo.locale?.identifier,
+        "phoneNumber": userInfo.phoneNumber,
+        "phoneNumberVerified": userInfo.phoneNumberVerified,
+        "address": userInfo.address,
+        "updatedAt": userInfo.updatedAt?.timeIntervalSince1970,
+        "customClaims": userInfo.customClaims
+    ]
+    
+    let result = json.compactMapValues { $0 }
+    
+    return result
+}
+
+private func sendResult(_ result: FlutterResult, data: Any?, error: Error?) {
+    if let error = error {
+        if let nserror = error as? CustomNSError {
+            result(FlutterError(code: "", message: error.localizedDescription, details: nserror.errorUserInfo))
+        } else {
+            result(FlutterError(code: "", message: error.localizedDescription, details: nil))
         }
-        
-        if let value = responseType {
-            let types: [ResponseType] = value.compactMap {
-                switch $0 {
-                case "token":
-                    return .token
-                case "idToken":
-                    return .idToken
-                case "code":
-                    return .code
-                default:
-                    return nil
-                }
-            }
-            
-            _ = auth.responseType(types)
-        }
-        
-        if let value = nonce {
-            _ = auth.nonce(value)
-        }
-        
-        _ = auth.parameters(parameters)
-        
-        return auth
+    } else if let data = data {
+        result(data)
+    } else {
+        result(nil)
     }
 }
 
-enum MethodType: String {
+enum Domain: String {
     case auth0
     case webAuth
     case authentication
@@ -153,34 +204,8 @@ enum Auth0Method: String {
     case getPlatformVersion
 }
 
-enum WebAuthMethod: String {
-    case start
-    case clearSession
-}
-
-enum AuthenticationMethod: String {
-    case login
-    case loginWithOTP
-    case loginDefaultDirectory
-    case createUser
-    case resetPassword
-    case startEmailPasswordless
-    case startPhoneNumberPasswordless
-    case userInfoWithToken
-    case userInfoWithAccessToken
-    case loginSocial
-    case tokenExchangeWithParameters
-    case tokenExchangeWithCode
-    case appleTokenExchange
-    case renew
-    case revoke
-    case delegation
-}
-
-enum CredentialsManagerMethod: String {
-    case enableBioMetrics
-    case storeCredentials
-    case clearCredentials
-    case hasValidCredentials
-    case getCredentials
+extension Decodable {
+    static func decode(data: Data, decoder: JSONDecoder = JSONDecoder()) throws -> Self {
+        return try decoder.decode(Self.self, from: data)
+    }
 }
