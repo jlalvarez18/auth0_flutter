@@ -2,9 +2,11 @@ library auth0_flutter;
 
 import 'dart:async';
 
-import 'package:auth0_flutter/src/identity.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+
+import 'package:auth0_flutter/src/channel_methods.dart';
+import 'package:auth0_flutter/src/identity.dart';
 
 part 'src/date.dart';
 part 'src/authentication.dart';
@@ -43,7 +45,8 @@ class Auth0 {
       'options': options
     };
 
-    final bool result = await _channel.invokeMethod('resumeAuth', arguments);
+    final bool result =
+        await _channel.invokeMethod(Auth0Method.resumeAuth, arguments);
 
     return result;
   }

@@ -43,8 +43,8 @@ class Authentication {
       'parameters': parameters
     };
 
-    final Map<String, dynamic> result =
-        await _channel.invokeMapMethod('authentication_login', args);
+    final result = await _channel.invokeMapMethod<String, dynamic>(
+        AuthenticationMethod.login, args);
 
     _processJSONForErrors(result);
 
@@ -55,10 +55,10 @@ class Authentication {
       {@required String mfaToken}) async {
     assert(otp != null);
 
-    final args = <String, dynamic>{'otp': otp, 'mfaToken': mfaToken};
+    final args = {'otp': otp, 'mfaToken': mfaToken};
 
-    final Map<String, dynamic> result =
-        await _channel.invokeMapMethod('authentication_login_with_otp', args);
+    final result = await _channel.invokeMapMethod<String, dynamic>(
+        AuthenticationMethod.loginWithOTP, args);
 
     _processJSONForErrors(result);
 
@@ -79,8 +79,8 @@ class Authentication {
       'parameters': parameters
     };
 
-    final Map<String, dynamic> result = await _channel.invokeMapMethod(
-        'authentication_login_default_directory', args);
+    final result = await _channel.invokeMapMethod<String, dynamic>(
+        AuthenticationMethod.loginDefaultDirectory, args);
 
     _processJSONForErrors(result);
 
@@ -103,8 +103,8 @@ class Authentication {
       'rootAttributes': rootAttributes
     };
 
-    final Map<String, dynamic> result =
-        await _channel.invokeMapMethod('authentication_create_user', args);
+    final result = await _channel.invokeMapMethod<String, dynamic>(
+        AuthenticationMethod.createUser, args);
 
     _processJSONForErrors(result);
 
@@ -113,10 +113,10 @@ class Authentication {
 
   Future<void> resetPassword(
       {@required String email, @required String connection}) async {
-    final args = <String, dynamic>{'email': email, 'connection': connection};
+    final args = {'email': email, 'connection': connection};
 
-    final Map<String, dynamic> result =
-        await _channel.invokeMapMethod('authentication_reset_password', args);
+    final result = await _channel.invokeMapMethod<String, dynamic>(
+        AuthenticationMethod.resetPassword, args);
 
     _processJSONForErrors(result);
   }
@@ -133,8 +133,8 @@ class Authentication {
       'parameters': parameters
     };
 
-    final Map<String, dynamic> result = await _channel.invokeMapMethod(
-        'authentication_start_email_passwordless', args);
+    final result = await _channel.invokeMapMethod<String, dynamic>(
+        AuthenticationMethod.startEmailPasswordless, args);
 
     _processJSONForErrors(result);
   }
@@ -143,14 +143,14 @@ class Authentication {
       {@required String phoneNumber,
       PasswordlessType type = PasswordlessType.code,
       String connection = 'sms'}) async {
-    final args = <String, dynamic>{
+    final args = {
       'phoneNumber': phoneNumber,
       'type': _passwordlessTypeToString(type),
       'connection': connection
     };
 
-    final Map<String, dynamic> result = await _channel.invokeMapMethod(
-        'authentication_start_phone_number_passwordless', args);
+    final result = await _channel.invokeMapMethod<String, dynamic>(
+        AuthenticationMethod.startPhoneNumberPasswordless, args);
 
     _processJSONForErrors(result);
   }
@@ -158,9 +158,11 @@ class Authentication {
   /// Returns user information by performing a request to /userinfo endpoint.
   /// - warning: for OIDC-conformant clients please use `userInfo(withAccessToken accessToken:)`
   Future<Profile> userInfoWithToken(String token) async {
-    final Map<String, dynamic> result = await _channel.invokeMapMethod(
-      'authentication_user_info_with_token',
-      <String, dynamic>{'token': token},
+    final args = {'token': token};
+
+    final result = await _channel.invokeMapMethod<String, dynamic>(
+      AuthenticationMethod.userInfoWithToken,
+      args,
     );
 
     _processJSONForErrors(result);
@@ -172,9 +174,11 @@ class Authentication {
   ///  to /userinfo endpoint.
   /// - important: This method should be used for OIDC Conformant clients.
   Future<UserInfo> userInfoWithAccessToken(String accessToken) async {
-    final Map<String, dynamic> result = await _channel.invokeMapMethod(
-      'authentication_user_info_with_access_token',
-      <String, dynamic>{'accessToken': accessToken},
+    final args = {'accessToken': accessToken};
+
+    final result = await _channel.invokeMapMethod<String, dynamic>(
+      AuthenticationMethod.userInfoWithAccessToken,
+      args,
     );
 
     _processJSONForErrors(result);
@@ -187,15 +191,15 @@ class Authentication {
       @required String connection,
       String scope = 'openid',
       Map<String, dynamic> parameters}) async {
-    final args = <String, dynamic>{
+    final args = {
       'token': token,
       'connection': connection,
       'scope': scope,
       'parameters': parameters
     };
 
-    final Map<String, dynamic> result =
-        await _channel.invokeMapMethod('authentication_login_social', args);
+    final result = await _channel.invokeMapMethod<String, dynamic>(
+        AuthenticationMethod.loginSocial, args);
 
     _processJSONForErrors(result);
 
@@ -204,10 +208,10 @@ class Authentication {
 
   Future<Credentials> tokenExchangeWithParameters(
       Map<String, dynamic> parameters) async {
-    final args = <String, dynamic>{'parameters': parameters};
+    final args = {'parameters': parameters};
 
-    final Map<String, dynamic> result = await _channel.invokeMapMethod(
-        'authentication_token_exchange_with_params', args);
+    final result = await _channel.invokeMapMethod<String, dynamic>(
+        AuthenticationMethod.tokenExchangeWithParameters, args);
 
     _processJSONForErrors(result);
 
@@ -216,14 +220,14 @@ class Authentication {
 
   Future<Credentials> tokenExchangeWithCode(String code,
       {String codeVerifier, String redirectURI}) async {
-    final args = <String, dynamic>{
+    final args = {
       'code': code,
       'codeVerifier': codeVerifier,
       'redirectURI': redirectURI
     };
 
-    final Map<String, dynamic> result = await _channel.invokeMapMethod(
-        'authentication_token_exchange_with_code', args);
+    final result = await _channel.invokeMapMethod<String, dynamic>(
+        AuthenticationMethod.tokenExchangeWithCode, args);
 
     _processJSONForErrors(result);
 
@@ -235,34 +239,31 @@ class Authentication {
 
   Future<Credentials> renew(
       {@required String refreshToken, String scope}) async {
-    final args = <String, dynamic>{
-      'refreshToken': refreshToken,
-      'scope': scope
-    };
+    final args = {'refreshToken': refreshToken, 'scope': scope};
 
-    final Map<String, dynamic> result =
-        await _channel.invokeMapMethod('authentication_renew', args);
+    final result = await _channel.invokeMapMethod<String, dynamic>(
+        AuthenticationMethod.renew, args);
 
     _processJSONForErrors(result);
 
     return Credentials.fromJSON(result);
   }
 
-  Future<void> revoke(String refreshToken) async {
-    final args = <String, dynamic>{'refreshToken': refreshToken};
+  Future<void> revoke({String refreshToken}) async {
+    final args = {'refreshToken': refreshToken};
 
-    final Map<String, dynamic> result =
-        await _channel.invokeMapMethod('authentication_revoke', args);
+    final result = await _channel.invokeMapMethod<String, dynamic>(
+        AuthenticationMethod.revoke, args);
 
     _processJSONForErrors(result);
   }
 
   Future<Map<String, dynamic>> delegation(
       Map<String, dynamic> parameters) async {
-    final args = <String, dynamic>{'parameters': parameters};
+    final args = {'parameters': parameters};
 
-    final Map<String, dynamic> result =
-        await _channel.invokeMapMethod('authentication_delegation', args);
+    final result = await _channel.invokeMapMethod<String, dynamic>(
+        AuthenticationMethod.delegation, args);
 
     _processJSONForErrors(result);
 

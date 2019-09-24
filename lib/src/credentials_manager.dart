@@ -13,28 +13,28 @@ class CredentialsManager {
       String cancelTitle,
       String fallbackTitle}) async {
     final result = await _channel.invokeMapMethod<String, dynamic>(
-        'credentials_manager_enable_biometrics');
+        CredentialsManagerMethod.enableBioMetrics);
 
     _processJSONForErrors(result);
   }
 
   Future<bool> storeCredentials(Credentials credentials) async {
     final result = await _channel.invokeMethod<bool>(
-        'credentials_manager_store_credentials', credentials.toJSON());
+        CredentialsManagerMethod.storeCredentials, credentials.toJSON());
 
     return result;
   }
 
   Future<bool> clearCredentials() async {
     final result = await _channel
-        .invokeMethod<bool>('credentials_manager_clear_credentials');
+        .invokeMethod<bool>(CredentialsManagerMethod.clearCredentials);
 
     return result;
   }
 
   Future<bool> hasValidCredentials() async {
     final result = await _channel
-        .invokeMethod<bool>('credentials_manager_has_valid_credentials');
+        .invokeMethod<bool>(CredentialsManagerMethod.hasValidCredentials);
 
     return result;
   }
@@ -42,7 +42,7 @@ class CredentialsManager {
   Future<Credentials> getCredentials({String scope}) async {
     final args = {'scope': scope};
     final result = await _channel.invokeMapMethod<String, dynamic>(
-        'credentials_manager_get_credentials', args);
+        CredentialsManagerMethod.getCredentials, args);
 
     _processJSONForErrors(result);
 
