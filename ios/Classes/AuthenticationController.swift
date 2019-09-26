@@ -8,7 +8,7 @@
 import Foundation
 import Auth0
 
-class AuthenticationController {
+class AuthenticationController: NSObject, FlutterPlugin {
     enum MethodName: String {
         case login
         case loginWithOTP
@@ -28,12 +28,25 @@ class AuthenticationController {
         case delegation
     }
     
-    static func handle(_ method: MethodName, arguments: Any, completion: @escaping Auth0ControllerCompletion) {
-        let decoder = JSONDecoder();
+    static func register(with registrar: FlutterPluginRegistrar) {
+        let channel = FlutterMethodChannel(name: "plugins.auth0_flutter.io/authentication", binaryMessenger: registrar.messenger())
+        
+        let instance = AuthenticationController()
+        
+        registrar.addMethodCallDelegate(instance, channel: channel)
+    }
+    
+    func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+        let arguments = call.arguments ?? [:]
         
         do {
+            guard let method = MethodName(rawValue: call.method) else {
+                sendResult(result, data: nil, error: Auth0PluginError.unknownMethod(call.method))
+                return
+            }
+            
             let data = try JSONSerialization.data(withJSONObject: arguments, options: [])
-            let authParams = try decoder.decode(AuthParameters.self, from: data)
+            let authParams = try AuthParameters.decode(data: data)
             
             let auth = authentication(clientId: authParams.clientId, domain: authParams.domain)
             
@@ -46,23 +59,23 @@ class AuthenticationController {
                            audience: params.audience,
                            scope: params.scope,
                            parameters: params.parametersDict())
-                    .start { (result) in
-                        switch result {
+                    .start { (authResult) in
+                        switch authResult {
                         case .success(let credentials):
-                            completion(credentialsToJSON(credentials), nil)
+                            sendResult(result, data: credentials.toJSON(), error: nil)
                         case .failure(let error):
-                            completion(nil, error)
+                            sendResult(result, data: nil, error: error)
                         }
                 }
                 
             case .loginWithOTP:
                 let params = try LoginWithOTPParameters.decode(data: data)
-                auth.login(withOTP: params.otp, mfaToken: params.mfaToken).start { (result) in
-                    switch result {
+                auth.login(withOTP: params.otp, mfaToken: params.mfaToken).start { (authResult) in
+                    switch authResult {
                     case .success(let credentials):
-                        completion(credentialsToJSON(credentials), nil)
+                        sendResult(result, data: credentials.toJSON(), error: nil)
                     case .failure(let error):
-                        completion(nil, error)
+                        sendResult(result, data: nil, error: error)
                     }
                 }
                 
@@ -73,12 +86,12 @@ class AuthenticationController {
                                            audience: params.audience,
                                            scope: params.scope,
                                            parameters: params.parametersDict())
-                    .start { (result) in
-                        switch result {
+                    .start { (authResult) in
+                        switch authResult {
                         case .success(let credentials):
-                            completion(credentialsToJSON(credentials), nil)
+                            sendResult(result, data: credentials.toJSON(), error: nil)
                         case .failure(let error):
-                            completion(nil, error)
+                            sendResult(result, data: nil, error: error)
                         }
                 }
                 
@@ -90,149 +103,149 @@ class AuthenticationController {
                                 connection: params.connection,
                                 userMetadata: params.userMetadataDict(),
                                 rootAttributes: params.rootAttributesDict())
-                    .start { (result) in
-                        switch result {
+                    .start { (authResult) in
+                        switch authResult {
                         case .success(let user):
-                            completion(databaseUserToJSON(user), nil)
+                            sendResult(result, data: databaseUserToJSON(user), error: nil)
                         case .failure(let error):
-                            completion(nil, error)
+                            sendResult(result, data: nil, error: error)
                         }
                 }
                 
             case .resetPassword:
                 let params = try ResetPasswordParameters.decode(data: data)
-                auth.resetPassword(email: params.email, connection: params.connection).start { (result) in
-                    switch result {
+                auth.resetPassword(email: params.email, connection: params.connection).start { (authResult) in
+                    switch authResult {
                     case .success(_):
-                        completion(nil, nil)
+                        sendResult(result, data: nil, error: nil)
                     case .failure(let error):
-                        completion(nil, error)
+                        sendResult(result, data: nil, error: error)
                     }
                 }
                 
             case .startEmailPasswordless:
                 let params = try StartEmailPasswordlessParameters.decode(data: data)
-                auth.startPasswordless(email: params.email, type: params.type, connection: params.connection, parameters: params.parametersDict()).start { (result) in
-                    switch result {
+                auth.startPasswordless(email: params.email, type: params.type, connection: params.connection, parameters: params.parametersDict()).start { (authResult) in
+                    switch authResult {
                     case .success(_):
-                        completion(nil, nil)
+                        sendResult(result, data: nil, error: nil)
                     case .failure(let error):
-                        completion(nil, error)
+                        sendResult(result, data: nil, error: error)
                     }
                 }
                 
             case .startPhoneNumberPasswordless:
                 let params = try StartPhoneNumberPasswordlessParameters.decode(data: data)
-                auth.startPasswordless(phoneNumber: params.phoneNumber, type: params.type, connection: params.connection).start { (result) in
-                    switch result {
+                auth.startPasswordless(phoneNumber: params.phoneNumber, type: params.type, connection: params.connection).start { (authResult) in
+                    switch authResult {
                     case .success(_):
-                        completion(nil, nil)
+                        sendResult(result, data: nil, error: nil)
                     case .failure(let error):
-                        completion(nil, error)
+                        sendResult(result, data: nil, error: error)
                     }
                 }
                 
             case .userInfoWithToken:
                 let params = try UserInfoWithTokenParameters.decode(data: data)
-                auth.userInfo(token: params.token).start { (result) in
-                    switch result {
+                auth.userInfo(token: params.token).start { (authResult) in
+                    switch authResult {
                     case .success(let profile):
-                        completion(profileToJSON(profile), nil)
+                        sendResult(result, data: profile.toJSON(), error: nil)
                     case .failure(let error):
-                        completion(nil, error)
+                        sendResult(result, data: nil, error: error)
                     }
                 }
                 
             case .userInfoWithAccessToken:
                 let params = try UserInfoWithAccessTokenParameters.decode(data: data)
-                auth.userInfo(withAccessToken: params.accessToken).start { (result) in
-                    switch result {
-                    case .failure(let error):
-                        completion(nil, error)
+                auth.userInfo(withAccessToken: params.accessToken).start { (authResult) in
+                    switch authResult {
                     case .success(let userInfo):
-                        completion(userInfoToJSON(userInfo), nil)
+                        sendResult(result, data: userInfo.toJSON(), error: nil)
+                    case .failure(let error):
+                        sendResult(result, data: nil, error: error)
                     }
                 }
                 
             case .loginSocial:
                 let params = try LoginSocialParameters.decode(data: data)
-                auth.loginSocial(token: params.token, connection: params.connection, scope: params.scope, parameters: params.parametersDict()).start { (result) in
-                    switch result {
+                auth.loginSocial(token: params.token, connection: params.connection, scope: params.scope, parameters: params.parametersDict()).start { (authResult) in
+                    switch authResult {
                     case .success(let credentials):
-                        completion(credentialsToJSON(credentials), nil)
+                        sendResult(result, data: credentials.toJSON(), error: nil)
                     case .failure(let error):
-                        completion(nil, error)
+                        sendResult(result, data: nil, error: error)
                     }
                 }
                 
             case .tokenExchangeWithParameters:
                 let params = try TokenExchangeWithParamsParameters.decode(data: data)
-                auth.tokenExchange(withParameters: params.parametersDict()).start { (result) in
-                    switch result {
+                auth.tokenExchange(withParameters: params.parametersDict()).start { (authResult) in
+                    switch authResult {
                     case .success(let credentials):
-                        completion(credentialsToJSON(credentials), nil)
+                        sendResult(result, data: credentials.toJSON(), error: nil)
                     case .failure(let error):
-                        completion(nil, error)
+                        sendResult(result, data: nil, error: error)
                     }
                 }
                 
             case .tokenExchangeWithCode:
                 let params = try TokenExchangeWithCodeParameters.decode(data: data)
-                auth.tokenExchange(withCode: params.code, codeVerifier: params.code, redirectURI: params.redirectURI).start { (result) in
-                    switch result {
+                auth.tokenExchange(withCode: params.code, codeVerifier: params.code, redirectURI: params.redirectURI).start { (authResult) in
+                    switch authResult {
                     case .success(let credentials):
-                        completion(credentialsToJSON(credentials), nil)
+                        sendResult(result, data: credentials.toJSON(), error: nil)
                     case .failure(let error):
-                        completion(nil, error)
+                        sendResult(result, data: nil, error: error)
                     }
                 }
                 
             case .appleTokenExchange:
                 let params = try AppleTokenExchangeParameters.decode(data: data)
-                auth.tokenExchange(withAppleAuthorizationCode: params.authCode, scope: params.scope, audience: params.audience).start { (result) in
-                    switch result {
+                auth.tokenExchange(withAppleAuthorizationCode: params.authCode, scope: params.scope, audience: params.audience).start { (authResult) in
+                    switch authResult {
                     case .success(let credentials):
-                        completion(credentialsToJSON(credentials), nil)
+                        sendResult(result, data: credentials.toJSON(), error: nil)
                     case .failure(let error):
-                        completion(nil, error)
+                        sendResult(result, data: nil, error: error)
                     }
                 }
                 
             case .renew:
                 let params = try RenewParameters.decode(data: data)
-                auth.renew(withRefreshToken: params.refreshToken, scope: params.scope).start { (result) in
-                    switch result {
+                auth.renew(withRefreshToken: params.refreshToken, scope: params.scope).start { (authResult) in
+                    switch authResult {
                     case .success(let credentials):
-                        completion(credentialsToJSON(credentials), nil)
+                        sendResult(result, data: credentials.toJSON(), error: nil)
                     case .failure(let error):
-                        completion(nil, error)
+                        sendResult(result, data: nil, error: error)
                     }
                 }
                 
             case .revoke:
                 let params = try RevokeParameters.decode(data: data)
-                auth.revoke(refreshToken: params.refreshToken).start { (result) in
-                    switch result {
+                auth.revoke(refreshToken: params.refreshToken).start { (authResult) in
+                    switch authResult {
                     case .success(_):
-                        completion(nil, nil)
+                        sendResult(result, data: nil, error: nil)
                     case .failure(let error):
-                        completion(nil, error)
+                        sendResult(result, data: nil, error: error)
                     }
                 }
                 
             case .delegation:
                 let params = try DelegationParameters.decode(data: data)
-                auth.delegation(withParameters: params.parametersDict()).start { (result) in
-                    switch result {
+                auth.delegation(withParameters: params.parametersDict()).start { (authResult) in
+                    switch authResult {
                     case .success(let dict):
-                        completion(dict, nil)
+                        sendResult(result, data: dict, error: nil)
                     case .failure(let error):
-                        completion(nil, error)
+                        sendResult(result, data: nil, error: error)
                     }
                 }
             }
         } catch {
-            completion(nil, error)
+            sendResult(result, data: nil, error: error)
         }
     }
 }

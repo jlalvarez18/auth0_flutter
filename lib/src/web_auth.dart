@@ -4,17 +4,15 @@ part of auth0_flutter;
 enum ResponseType { token, idToken, code }
 
 class WebAuth {
-  WebAuth._(
-      {@required this.clientId,
-      @required this.domain,
-      @required MethodChannel channel})
-      : _channel = channel;
+  static const _channel =
+      const MethodChannel('plugins.auth0_flutter.io/web_auth');
+
+  WebAuth._({@required this.clientId, @required this.domain});
 
   final String clientId;
   final String domain;
 
   final Map<String, String> _parameters = {};
-  final MethodChannel _channel;
 
   bool _universalLink = false;
   List<ResponseType> _responseType = [ResponseType.code];
@@ -92,7 +90,8 @@ class WebAuth {
     args['clientId'] = clientId;
     args['domain'] = domain;
     args['universalLink'] = _universalLink;
-    args['responseType'] = _responseType.map((v) => _responseTypeToString(v));
+    args['responseType'] =
+        _responseType.map((v) => _responseTypeToString(v)).toList();
     args['nonce'] = _nonce;
     args['parameters'] = _parameters;
 
@@ -104,7 +103,7 @@ class WebAuth {
 
       json = result;
     } on PlatformException catch (e) {
-      print(e.message);
+      throw WebAuthError.from(e);
     }
 
     return Credentials.fromJSON(json);

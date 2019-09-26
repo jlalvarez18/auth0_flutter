@@ -1,47 +1,54 @@
 class Auth0Method {
-  static const resumeAuth = 'auth0.resumeAuth';
-  static const getPlatformVersion = 'auth0.getPlatformVersion';
+  static const getPlatformVersion = 'getPlatformVersion';
 
   Auth0Method._();
 }
 
 class WebAuthMethod {
-  static const start = 'webAuth.start';
-  static const clearSession = 'webAuth.clearSession';
+  static const start = 'start';
+  static const clearSession = 'clearSession';
 
   WebAuthMethod._();
 }
 
 class AuthenticationMethod {
-  static const login = 'authentication.login';
-  static const loginWithOTP = 'authentication.loginWithOtp';
-  static const loginDefaultDirectory = 'authentication.loginDefaultDirectory';
-  static const createUser = 'authentication.createUser';
-  static const resetPassword = 'authentication.resetPassword';
-  static const startEmailPasswordless = 'authentication.startEmailPasswordless';
-  static const startPhoneNumberPasswordless =
-      'authentication.startPhoneNumberPasswordless';
-  static const userInfoWithToken = 'authentication.userInfoWithToken';
-  static const userInfoWithAccessToken =
-      'authentication.userInfoWithAccessToken';
-  static const loginSocial = 'authentication.loginSocial';
-  static const tokenExchangeWithParameters =
-      'authentication.tokenExchangeWithParams';
-  static const tokenExchangeWithCode = 'authentication.tokenExchangeWithCode';
-  static const appleTokenExchange = 'authentication.appleTokenExchange';
-  static const renew = 'authentication.renew';
-  static const revoke = 'authentication.revoke';
-  static const delegation = 'authentication.delegation';
+  static const login = 'login';
+  static const loginWithOTP = 'loginWithOtp';
+  static const loginDefaultDirectory = 'loginDefaultDirectory';
+  static const createUser = 'createUser';
+  static const resetPassword = 'resetPassword';
+  static const startEmailPasswordless = 'startEmailPasswordless';
+  static const startPhoneNumberPasswordless = 'startPhoneNumberPasswordless';
+  static const userInfoWithToken = 'userInfoWithToken';
+  static const userInfoWithAccessToken = 'userInfoWithAccessToken';
+  static const loginSocial = 'loginSocial';
+  static const tokenExchangeWithParameters = 'tokenExchangeWithParams';
+  static const tokenExchangeWithCode = 'tokenExchangeWithCode';
+  static const appleTokenExchange = 'appleTokenExchange';
+  static const renew = 'renew';
+  static const revoke = 'revoke';
+  static const delegation = 'delegation';
 
   AuthenticationMethod._();
 }
 
 class CredentialsManagerMethod {
-  static const enableBioMetrics = 'credentialsManager.enableBioMetrics';
-  static const storeCredentials = 'credentialsManager.storeCredentials';
-  static const clearCredentials = 'credentialsManager.clearCredentials';
-  static const hasValidCredentials = 'credentialsManager.hasValidCredentials';
-  static const getCredentials = 'credentialsManager.getCredentials';
+  static const enableBioMetrics = 'enableBioMetrics';
+  static const storeCredentials = 'storeCredentials';
+  static const clearCredentials = 'clearCredentials';
+  static const hasValidCredentials = 'hasValidCredentials';
+  static const getCredentials = 'getCredentials';
 
   CredentialsManagerMethod._();
+}
+
+class UsersMethod {
+  static const get = 'get';
+  static const patchAttributes = 'patchAttributes';
+  static const patchUserMetadata = 'patchUserMetadata';
+  static const linkWithOtherUserToken = 'linkWithOtherUserToken';
+  static const linkWithUserId = 'linkWithUserId';
+  static const unlink = 'unlink';
+
+  UsersMethod._();
 }

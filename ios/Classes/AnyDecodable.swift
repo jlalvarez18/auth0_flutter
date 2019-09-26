@@ -23,20 +23,40 @@ public struct AnyDecodable: Decodable {
             self.init(value: bool)
         } else if let int = try? container.decode(Int.self) {
             self.init(value: int)
+        } else if let int = try? container.decode(Int8.self) {
+            self.init(value: int)
+        } else if let int = try? container.decode(Int16.self) {
+            self.init(value: int)
+        } else if let int = try? container.decode(Int32.self) {
+            self.init(value: int)
+        } else if let int = try? container.decode(Int64.self) {
+            self.init(value: int)
         } else if let uint = try? container.decode(UInt.self) {
             self.init(value: uint)
+        } else if let uint = try? container.decode(UInt8.self) {
+            self.init(value: uint)
+        } else if let uint = try? container.decode(UInt16.self) {
+            self.init(value: uint)
+        } else if let uint = try? container.decode(UInt32.self) {
+            self.init(value: uint)
+        } else if let uint = try? container.decode(UInt64.self) {
+            self.init(value: uint)
+        } else if let float = try? container.decode(Float.self) {
+            self.init(value: float)
         } else if let double = try? container.decode(Double.self) {
             self.init(value: double)
         } else if let string = try? container.decode(String.self) {
             self.init(value: string)
-        } else if let float = try? container.decode(Float.self) {
-            self.init(value: float)
+        } else if let date = try? container.decode(Date.self) {
+            self.init(value: date)
+        } else if let url = try? container.decode(URL.self) {
+            self.init(value: url)
         } else if let array = try? container.decode([AnyDecodable].self) {
             self.init(value: array.map { $0.value })
         } else if let dictionary = try? container.decode([String: AnyDecodable].self) {
             self.init(value: dictionary.mapValues { $0.value })
         } else {
-            throw DecodingError.dataCorruptedError(in: container, debugDescription: "AnyCodable value cannot be decoded")
+            throw DecodingError.dataCorruptedError(in: container, debugDescription: "AnyDecodable value cannot be decoded")
         }
     }
 }
@@ -75,6 +95,10 @@ extension AnyDecodable: Equatable {
             return lhs == rhs
         case let (lhs as String, rhs as String):
             return lhs == rhs
+        case let (lhs as Date, rhs as Date):
+            return lhs == rhs
+        case let (lhs as URL, rhs as URL):
+            return lhs == rhs
         case let (lhs as [String: AnyDecodable], rhs as [String: AnyDecodable]):
             return lhs == rhs
         case let (lhs as [AnyDecodable], rhs as [AnyDecodable]):
@@ -108,5 +132,47 @@ extension AnyDecodable: CustomDebugStringConvertible {
         default:
             return "AnyDecodable(\(description))"
         }
+    }
+}
+
+extension AnyDecodable: ExpressibleByNilLiteral {
+    public init(nilLiteral: ()) {
+        self.init(value: nil as Any?)
+    }
+}
+
+extension AnyDecodable: ExpressibleByBooleanLiteral {
+    public init(booleanLiteral value: Bool) {
+        self.init(value: value)
+    }
+}
+
+extension AnyDecodable: ExpressibleByIntegerLiteral {
+    public init(integerLiteral value: Int) {
+        self.init(value: value)
+    }
+}
+
+extension AnyDecodable: ExpressibleByFloatLiteral {
+    public init(floatLiteral value: Double) {
+        self.init(value: value)
+    }
+}
+
+extension AnyDecodable: ExpressibleByStringLiteral {
+    public init(stringLiteral value: String) {
+        self.init(value: value)
+    }
+}
+
+extension AnyDecodable: ExpressibleByArrayLiteral {
+    public init(arrayLiteral elements: Any...) {
+        self.init(value: elements)
+    }
+}
+
+extension AnyDecodable: ExpressibleByDictionaryLiteral {
+    public init(dictionaryLiteral elements: (AnyHashable, Any)...) {
+        self.init(value: [AnyHashable: Any](elements, uniquingKeysWith: { first, _ in first }))
     }
 }

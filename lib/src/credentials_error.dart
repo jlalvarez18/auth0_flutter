@@ -14,19 +14,24 @@ final _hash = <String, CredentialErrorType>{
   'touch_failed': CredentialErrorType.touchFailed
 };
 
-class CredentialsError {
+class CredentialsManagerError implements Exception {
   final CredentialErrorType type;
   final String description;
 
-  CredentialsError({this.type, this.description});
+  CredentialsManagerError({this.type, this.description});
 
-  factory CredentialsError.fromJSON(Map<String, dynamic> json) {
+  @override
+  String toString() {
+    return "Credentials Error($type, $description)";
+  }
+
+  factory CredentialsManagerError.fromJSON(Map<String, dynamic> json) {
     final typeString = json['error_type'] as String;
 
     final type = _hash[typeString];
 
     final description = json['error_description'] as String;
 
-    return CredentialsError(type: type, description: description);
+    return CredentialsManagerError(type: type, description: description);
   }
 }

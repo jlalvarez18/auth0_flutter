@@ -8,7 +8,7 @@
 import Foundation
 import Auth0
 
-class CredentialsManagerController {
+class CredentialsManagerController: NSObject, FlutterPlugin {
     enum MethodName: String {
         case enableBioMetrics
         case storeCredentials
@@ -17,75 +17,71 @@ class CredentialsManagerController {
         case getCredentials
     }
     
-    enum CredentialsError: Swift.Error {
-        case missingParameter(String)
-        case unknownError
+    static func register(with registrar: FlutterPluginRegistrar) {
+        let channel = FlutterMethodChannel(name: "plugins.auth0_flutter.io/credentials_manager", binaryMessenger: registrar.messenger())
         
-        var localizedDescription: String {
-            switch self {
-            case .missingParameter(let value):
-                return "Missing parameter: \(value)";
-            case .unknownError:
-                return "Unknown error occurred"
-            }
-        }
+        let instance = CredentialsManagerController()
+        
+        registrar.addMethodCallDelegate(instance, channel: channel)
     }
-
-    static func handle(_ method: MethodName, arguments: Any, completion: @escaping Auth0ControllerCompletion) {
-        let decoder = JSONDecoder();
-        
-        let args: CredentialsArguments
+    
+    func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+        let args = call.arguments as? [String: Any] ?? [:]
         
         do {
-            let data = try JSONSerialization.data(withJSONObject: arguments, options: [])
-            args = try decoder.decode(CredentialsArguments.self, from: data)
-        } catch {
-            completion(nil, CredentialsError.missingParameter("credentials"))
-            return
-        }
-        
-        let auth = authentication(clientId: args.clientId, domain: args.domain)
-        var manager = CredentialsManager(authentication: auth)
-        
-        switch method {
-        case .enableBioMetrics:
-            manager.enableBiometrics(withTitle: args.title ?? "", cancelTitle: args.cancelTitle, fallbackTitle: args.fallbackTitle)
-            completion(nil, nil)
+            let data = try JSONSerialization.data(withJSONObject: args, options: [])
+            let managerArgs = try CredentialsManagerArguments.decode(data: data)
             
-        case .storeCredentials:
-            guard let credentialsArg = args.credentials else {
-                completion(nil, nil)
+            let auth = authentication(clientId: managerArgs.clientId, domain: managerArgs.domain)
+            var manager = CredentialsManager(authentication: auth)
+            
+            guard let method = MethodName(rawValue: call.method) else {
+                sendResult(result, data: nil, error: Auth0PluginError.unknownMethod(call.method))
                 return
             }
             
-            let credentials = Credentials(json: credentialsArg)
-            let success = manager.store(credentials: credentials)
-            
-            completion(success, nil)
-            
-        case .clearCredentials:
-            let success = manager.clear()
-            completion(success, nil)
-            
-        case .hasValidCredentials:
-            let success = manager.hasValid()
-            completion(success, nil)
-            
-        case .getCredentials:
-            manager.credentials { (error, credentials) in
-                if let error = error {
-                    completion(nil, error)
-                } else if let credentials = credentials {
-                    completion(credentialsToJSON(credentials), nil)
-                } else {
-                    completion(nil, CredentialsError.unknownError)
+            switch method {
+            case .enableBioMetrics:
+                manager.enableBiometrics(withTitle: managerArgs.title ?? "", cancelTitle: managerArgs.cancelTitle, fallbackTitle: managerArgs.fallbackTitle)
+                sendResult(result, data: nil, error: nil)
+                
+            case .storeCredentials:
+                guard let credentialsArg = managerArgs.credentialsDict() else {
+                    sendResult(result, data: nil, error: nil)
+                    return
+                }
+                
+                let credentials = Credentials(json: credentialsArg)
+                let success = manager.store(credentials: credentials)
+                
+                sendResult(result, data: success, error: nil)
+                
+            case .clearCredentials:
+                let success = manager.clear()
+                sendResult(result, data: success, error: nil)
+                
+            case .hasValidCredentials:
+                let success = manager.hasValid()
+                sendResult(result, data: success, error: nil)
+                
+            case .getCredentials:
+                manager.credentials { (error, credentials) in
+                    if let credentials = credentials {
+                        sendResult(result, data: credentials.toJSON(), error: nil)
+                    } else if let error = error {
+                        sendResult(result, data: nil, error: error)
+                    } else {
+                        sendResult(result, data: nil, error: Auth0PluginError.unknownError)
+                    }
                 }
             }
+        } catch {
+            sendResult(result, data: nil, error: error)
         }
     }
 }
 
-private struct CredentialsArguments: Decodable {
+private struct CredentialsManagerArguments: Decodable {
     let clientId: String
     let domain: String
     let storeKey: String?
@@ -94,5 +90,9 @@ private struct CredentialsArguments: Decodable {
     let cancelTitle: String?
     let fallbackTitle: String?
     
-    let credentials: [String: String]?
+    private let credentials: [String: AnyDecodable]?
+    
+    func credentialsDict() -> [String: Any]? {
+        return credentials?.mapValues { $0.value }
+    }
 }

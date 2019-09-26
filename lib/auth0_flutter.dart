@@ -17,41 +17,33 @@ part 'src/profile.dart';
 part 'src/user_info.dart';
 part 'src/users.dart';
 part 'src/user_patch_attributes.dart';
-part 'src/error_handling.dart';
 part 'src/authentication_error.dart';
 part 'src/credentials_manager.dart';
 part 'src/credentials_error.dart';
+part 'src/users_error.dart';
+part 'src/web_auth_error.dart';
 
 class Auth0 {
-  static const MethodChannel _channel = const MethodChannel('auth0_flutter');
+  final String clientId;
+  final String domain;
 
-  static Future<String> get platformVersion async {
-    final String version = await _channel.invokeMethod('getPlatformVersion');
-    return version;
+  Auth0({@required this.clientId, @required this.domain})
+      : assert(clientId != null),
+        assert(domain != null);
+
+  WebAuth webAuth() {
+    return WebAuth._(clientId: clientId, domain: domain);
   }
 
-  static WebAuth webAuth({String clientId, String domain}) {
-    return WebAuth._(clientId: clientId, domain: domain, channel: _channel);
+  Authentication authentication() {
+    return Authentication._(clientId: clientId, domain: domain);
   }
 
-  static Authentication authentication({String clientId, String domain}) {
-    return Authentication._(
-        clientId: clientId, domain: domain, channel: _channel);
+  Users users({String token}) {
+    return Users._(token: token, domain: domain);
   }
 
-  static Future<bool> resumeAuth(Uri url, Map<String, dynamic> options) async {
-    final arguments = <String, dynamic>{
-      'url': url.toString(),
-      'options': options
-    };
-
-    final bool result =
-        await _channel.invokeMethod(Auth0Method.resumeAuth, arguments);
-
-    return result;
-  }
-
-  static Users users({String token, String domain}) {
-    return Users._(token: token, domain: domain, channel: _channel);
+  CredentialsManager credentialsManager() {
+    return CredentialsManager(clientId: clientId, domain: domain);
   }
 }

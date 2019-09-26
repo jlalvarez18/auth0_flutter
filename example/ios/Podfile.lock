@@ -9,7 +9,7 @@ PODS:
 
 DEPENDENCIES:
   - auth0_flutter (from `.symlinks/plugins/auth0_flutter/ios`)
-  - Flutter (from `.symlinks/flutter/ios-release`)
+  - Flutter (from `.symlinks/flutter/ios`)
 
 SPEC REPOS:
   https://github.com/cocoapods/specs.git:
@@ -20,7 +20,7 @@ EXTERNAL SOURCES:
   auth0_flutter:
     :path: ".symlinks/plugins/auth0_flutter/ios"
   Flutter:
-    :path: ".symlinks/flutter/ios-release"
+    :path: ".symlinks/flutter/ios"
 
 SPEC CHECKSUMS:
   Auth0: 0874a17d1ed7aefa54de2003244be65cad347fcb

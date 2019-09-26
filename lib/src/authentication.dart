@@ -19,13 +19,15 @@ String _passwordlessTypeToString(PasswordlessType type) {
 }
 
 class Authentication {
+  static const _channel =
+      const MethodChannel('plugins.auth0_flutter.io/authentication');
+
   final String clientId;
   final String domain;
-  final MethodChannel _channel;
 
-  Authentication._(
-      {@required this.clientId, @required this.domain, MethodChannel channel})
-      : _channel = channel;
+  Authentication._({@required this.clientId, @required this.domain});
+
+  // TODO: need to add _performMethod to handle AuthenticationErrors
 
   Future<Credentials> login(
       {@required String usernameOrEmail,
@@ -260,8 +262,7 @@ class Authentication {
   }
 
   WebAuth webAuthWithConnection(String connection) {
-    return WebAuth._(clientId: clientId, domain: domain, channel: _channel)
-        .connection(connection);
+    return WebAuth._(clientId: clientId, domain: domain).connection(connection);
   }
 
   Map<String, dynamic> _generateArguments(Map<String, dynamic> other) {

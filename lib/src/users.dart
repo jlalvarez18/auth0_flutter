@@ -1,64 +1,68 @@
 part of auth0_flutter;
 
 class Users {
+  static const MethodChannel _channel =
+      MethodChannel('plugins.auth0_flutter.io/users');
+
   final String token;
   final String domain;
-  final MethodChannel _channel;
 
-  Users._({this.token, this.domain, MethodChannel channel})
-      : _channel = channel;
+  Users._({this.token, this.domain});
 
   Future<Map<String, dynamic>> get(
-      {String identifier, List<String> fields, bool include}) async {
-    final arguments = {
-      'identifier': identifier,
-      'fields': fields,
-      'include': include
-    };
+      {@required String identifier,
+      List<String> fields = const [],
+      bool include = true}) async {
+    final arguments = _generateArguments(
+        {'identifier': identifier, 'fields': fields, 'include': include});
 
-    final result =
-        await _channel.invokeMapMethod<String, dynamic>('users_get', arguments);
+    return await _performMethod(() async {
+      final result = await _channel.invokeMapMethod<String, dynamic>(
+          UsersMethod.get, arguments);
 
-    return result;
+      return result;
+    });
   }
 
   Future<Map<String, dynamic>> patch(
-      {String identifier, UserPatchAttributes attributes}) async {
-    final arguments = <String, dynamic>{
-      'identifier': identifier,
-      'attributes': attributes._dictionary
-    };
+      {@required String identifier,
+      @required UserPatchAttributes attributes}) async {
+    final arguments = _generateArguments(
+        {'identifier': identifier, 'attributes': attributes._dictionary});
 
-    final result = await _channel.invokeMapMethod<String, dynamic>(
-        'users_patch_attributes', arguments);
+    return await _performMethod(() async {
+      final result = await _channel.invokeMapMethod<String, dynamic>(
+          UsersMethod.patchAttributes, arguments);
 
-    return result;
+      return result;
+    });
   }
 
   Future<Map<String, dynamic>> patchWithUserMetadata(
-      {String identifier, Map<String, dynamic> userMetadata}) async {
-    final arguments = <String, dynamic>{
-      'identifier': identifier,
-      'userMetadata': userMetadata
-    };
+      {@required String identifier,
+      @required Map<String, dynamic> userMetadata}) async {
+    final arguments = _generateArguments(
+        {'identifier': identifier, 'userMetadata': userMetadata});
 
-    final result = await _channel.invokeMapMethod<String, dynamic>(
-        'users_patch_user_metadata', arguments);
+    return await _performMethod(() async {
+      final result = await _channel.invokeMapMethod<String, dynamic>(
+          UsersMethod.patchUserMetadata, arguments);
 
-    return result;
+      return result;
+    });
   }
 
   Future<List<Map<String, dynamic>>> linkWithOtherUserToken(
-      {String identifier, String token}) async {
-    final arguments = <String, dynamic>{
-      'identifier': identifier,
-      'token': token
-    };
+      {@required String identifier, @required String token}) async {
+    final arguments =
+        _generateArguments({'identifier': identifier, 'token': token});
 
-    final result = await _channel.invokeListMethod<Map<String, dynamic>>(
-        'users_link_with_other_user_token', arguments);
+    return await _performMethod(() async {
+      final result = await _channel.invokeListMethod<Map<String, dynamic>>(
+          UsersMethod.linkWithOtherUserToken, arguments);
 
-    return result;
+      return result;
+    });
   }
 
   Future<List<Map<String, dynamic>>> linkWithUserId(
@@ -66,32 +70,56 @@ class Users {
       @required String userId,
       @required String provider,
       String connectionId}) async {
-    final arguments = <String, dynamic>{
+    final arguments = _generateArguments({
       'identifier': identifier,
       'userId': userId,
       'provider': provider,
       'connectionId': connectionId
-    };
+    });
 
-    final result = await _channel.invokeListMethod<Map<String, dynamic>>(
-        'users_link_with_user_id', arguments);
+    return await _performMethod(() async {
+      final result = await _channel.invokeListMethod<Map<String, dynamic>>(
+          UsersMethod.linkWithUserId, arguments);
 
-    return result;
+      return result;
+    });
   }
 
   Future<List<Map<String, dynamic>>> unlink(
       {@required String identityId,
       @required String provider,
       @required String fromUserId}) async {
-    final arguments = <String, dynamic>{
+    final arguments = _generateArguments({
       'identityId': identityId,
       'provider': provider,
       'fromUserId': fromUserId
-    };
+    });
 
-    final result = await _channel.invokeListMethod<Map<String, dynamic>>(
-        'users_unlink', arguments);
+    return await _performMethod(() async {
+      final result = await _channel.invokeListMethod<Map<String, dynamic>>(
+          UsersMethod.unlink, arguments);
 
-    return result;
+      return result;
+    });
+  }
+
+  Map<String, dynamic> _generateArguments(Map<String, dynamic> other) {
+    final args = {'token': token, 'domain': domain};
+
+    if (other != null) {
+      args.addAll(other);
+    }
+
+    return args;
+  }
+
+  Future<T> _performMethod<T>(AsyncValueGetter<T> block) async {
+    try {
+      final result = await block();
+
+      return result;
+    } on PlatformException catch (e) {
+      throw UsersError.from(e);
+    }
   }
 }

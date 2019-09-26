@@ -8,49 +8,56 @@
 import Foundation
 import Auth0
 
-class WebAuthController {
+class WebAuthController: NSObject, FlutterPlugin {
     enum MethodName: String {
         case start
         case clearSession
     }
     
-    enum Error: Swift.Error {
-        case authError(WebAuthError)
+    static func register(with registrar: FlutterPluginRegistrar) {
+        let channel = FlutterMethodChannel(name: "plugins.auth0_flutter.io/web_auth", binaryMessenger: registrar.messenger())
+        
+        let instance = WebAuthController()
+        
+        registrar.addMethodCallDelegate(instance, channel: channel)
     }
     
-    static func handle(_ method: MethodName, arguments: Any, completion: @escaping Auth0ControllerCompletion) {
-        let decoder = JSONDecoder();
-        
-        var args: WebAuthArguments
+    func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+        let args = call.arguments as? [String: Any] ?? [:]
         
         do {
-            let data = try JSONSerialization.data(withJSONObject: arguments, options: [])
-            args = try decoder.decode(WebAuthArguments.self, from: data)
-        } catch {
-            completion(nil, error)
-            return
-        }
-        
-        switch method {
-        case .start:
-            args.webAuth().start { (result) in
-                switch result {
-                case .success(let credentials):
-                    completion(credentialsToJSON(credentials), nil)
-                    
-                case .failure(let error):
-                    let e = error as! WebAuthError
-                    
-                    completion(nil, e)
+            guard let method = MethodName(rawValue: call.method) else {
+                throw Auth0PluginError.unknownMethod(call.method)
+            }
+            
+            let data = try JSONSerialization.data(withJSONObject: args, options: [])
+            let authArguments = try WebAuthArguments.decode(data: data)
+            
+            let webAuth = authArguments.webAuth()
+            
+            switch method {
+            case .start:
+                webAuth.start { (authResult) in
+                    switch authResult {
+                    case .success(let credentials):
+                        sendResult(result, data: credentials.toJSON(), error: nil)
+                        
+                    case .failure(let error):
+                        let e = WebAuthErrorCustom(error as! WebAuthError)
+                        
+                        sendResult(result, data: nil, error: e)
+                    }
+                }
+                
+            case .clearSession:
+                let dict = call.arguments as? [String: Bool] ?? [:]
+                
+                webAuth.clearSession(federated: dict["federated"] ?? false) { (success) in
+                    sendResult(result, data: success, error: nil)
                 }
             }
-            
-        case .clearSession:
-            let dict = arguments as? [String: Bool] ?? [:]
-            
-            args.webAuth().clearSession(federated: dict["federated"] ?? false) { (success) in
-                completion(success, nil)
-            }
+        } catch {
+            sendResult(result, data: nil, error: error)
         }
     }
 }
