@@ -11,10 +11,10 @@ class AuthenticationError implements Exception {
     return "AuthenticationError($statusCode, $info)";
   }
 
-  factory AuthenticationError.fromJSON(Map<String, dynamic> json) {
-    final statusCode = json.remove('status_code');
-    final info = json;
+  factory AuthenticationError.from(PlatformException e) {
+    final details = Map<String, dynamic>.from(e.details);
 
-    return AuthenticationError._(info: info, statusCode: statusCode);
+    return AuthenticationError._(
+        info: details['info'], statusCode: details['statusCode']);
   }
 }

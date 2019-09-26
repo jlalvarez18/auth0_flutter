@@ -18,6 +18,11 @@ class WebAuthError implements Exception {
 
   WebAuthError({this.type, this.description});
 
+  @override
+  String toString() {
+    return "WebAuthError($type, $description)";
+  }
+
   factory WebAuthError.from(PlatformException e) {
     final details = Map<String, dynamic>.from(e.details);
 

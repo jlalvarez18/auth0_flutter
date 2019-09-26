@@ -58,10 +58,9 @@ class _MyAppState extends State<MyApp> {
 
   Future<Credentials> webAuth() async {
     try {
-      return _webAuth.start();
+      return await _webAuth.start();
     } on WebAuthError catch (e) {
-      print(e.type);
-      print(e.description);
+      print(e);
 
       return null;
     }

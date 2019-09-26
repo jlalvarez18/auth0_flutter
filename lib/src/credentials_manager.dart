@@ -6,6 +6,9 @@ class CredentialsManager {
 
   final Map<String, dynamic> _parameters;
 
+  CredentialsManagerError _errorHandler(PlatformException e) =>
+      CredentialsManagerError.from(e);
+
   CredentialsManager(
       {@required String clientId, @required String domain, String storeKey})
       : _parameters = {
@@ -25,66 +28,60 @@ class CredentialsManager {
     args['cancelTitle'] = cancelTitle;
     args['fallbackTitle'] = fallbackTitle;
 
-    await _performMethod(() async {
-      await _channel.invokeMapMethod<String, dynamic>(
-          CredentialsManagerMethod.enableBioMetrics, args);
-    });
+    await invokeMapMethod<String, dynamic>(
+        channel: _channel,
+        method: CredentialsManagerMethod.enableBioMetrics,
+        arguments: args,
+        exceptionHandler: _errorHandler);
   }
 
   Future<bool> storeCredentials(Credentials credentials) async {
     final args = Map.fromEntries(_parameters.entries);
     args['credentials'] = credentials.toJSON();
 
-    return await _performMethod(() async {
-      final result = await _channel.invokeMethod<bool>(
-          CredentialsManagerMethod.storeCredentials, args);
+    final result = await invokeMethod<bool>(
+        channel: _channel,
+        method: CredentialsManagerMethod.storeCredentials,
+        arguments: args,
+        exceptionHandler: _errorHandler);
 
-      return result;
-    });
+    return result;
   }
 
   Future<bool> clearCredentials() async {
     final args = Map.fromEntries(_parameters.entries);
 
-    return await _performMethod(() async {
-      final result = await _channel.invokeMethod<bool>(
-          CredentialsManagerMethod.clearCredentials, args);
+    final result = await invokeMethod<bool>(
+        channel: _channel,
+        method: CredentialsManagerMethod.clearCredentials,
+        arguments: args,
+        exceptionHandler: _errorHandler);
 
-      return result;
-    });
+    return result;
   }
 
   Future<bool> hasValidCredentials() async {
     final args = Map.fromEntries(_parameters.entries);
 
-    return await _performMethod(() async {
-      final result = await _channel.invokeMethod<bool>(
-          CredentialsManagerMethod.hasValidCredentials, args);
+    final result = await invokeMethod<bool>(
+        channel: _channel,
+        method: CredentialsManagerMethod.hasValidCredentials,
+        arguments: args,
+        exceptionHandler: _errorHandler);
 
-      return result;
-    });
+    return result;
   }
 
   Future<Credentials> getCredentials({String scope}) async {
     final args = Map.fromEntries(_parameters.entries);
     args['scope'] = scope;
 
-    return await _performMethod(() async {
-      final result = await _channel.invokeMapMethod<String, dynamic>(
-          CredentialsManagerMethod.getCredentials, args);
+    final result = await invokeMapMethod<String, dynamic>(
+        channel: _channel,
+        method: CredentialsManagerMethod.getCredentials,
+        arguments: args,
+        exceptionHandler: _errorHandler);
 
-      return Credentials.fromJSON(result);
-    });
-  }
-
-  Future<T> _performMethod<T>(AsyncValueGetter<T> block) async {
-    try {
-      final result = await block();
-
-      return result;
-    } on PlatformException catch (e) {
-      final details = Map<String, dynamic>.from(e.details);
-      throw CredentialsManagerError.fromJSON(details);
-    }
+    return Credentials.fromJSON(result);
   }
 }

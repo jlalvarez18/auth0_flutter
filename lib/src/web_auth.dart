@@ -7,6 +7,8 @@ class WebAuth {
   static const _channel =
       const MethodChannel('plugins.auth0_flutter.io/web_auth');
 
+  WebAuthError _errorHandler(PlatformException e) => WebAuthError.from(e);
+
   WebAuth._({@required this.clientId, @required this.domain});
 
   final String clientId;
@@ -85,35 +87,37 @@ class WebAuth {
   }
 
   Future<Credentials> start() async {
-    final Map<String, dynamic> args = {};
+    final args = <String, dynamic>{
+      'clientId': clientId,
+      'domain': domain,
+      'universalLink': _universalLink,
+      'responseType':
+          _responseType.map((v) => _responseTypeToString(v)).toList(),
+      'nonce': _nonce,
+      'parameters': _parameters
+    };
 
-    args['clientId'] = clientId;
-    args['domain'] = domain;
-    args['universalLink'] = _universalLink;
-    args['responseType'] =
-        _responseType.map((v) => _responseTypeToString(v)).toList();
-    args['nonce'] = _nonce;
-    args['parameters'] = _parameters;
-
-    Map<String, dynamic> json;
-
-    try {
-      final result = await _channel.invokeMapMethod<String, dynamic>(
-          WebAuthMethod.start, args);
-
-      json = result;
-    } on PlatformException catch (e) {
-      throw WebAuthError.from(e);
-    }
+    final json = await invokeMapMethod(
+        channel: _channel,
+        method: WebAuthMethod.start,
+        arguments: args,
+        exceptionHandler: _errorHandler);
 
     return Credentials.fromJSON(json);
   }
 
   Future<bool> clearSession(bool federated) async {
-    final arguments = {'federated': federated};
+    final arguments = <String, dynamic>{
+      'clientId': clientId,
+      'domain': domain,
+      'federated': federated
+    };
 
-    final bool result =
-        await _channel.invokeMethod(WebAuthMethod.clearSession, arguments);
+    final result = await invokeMethod<bool>(
+        channel: _channel,
+        method: WebAuthMethod.clearSession,
+        arguments: arguments,
+        exceptionHandler: _errorHandler);
 
     return result;
   }

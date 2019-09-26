@@ -22,6 +22,7 @@ part 'src/credentials_manager.dart';
 part 'src/credentials_error.dart';
 part 'src/users_error.dart';
 part 'src/web_auth_error.dart';
+part 'src/channel_helper.dart';
 
 class Auth0 {
   final String clientId;

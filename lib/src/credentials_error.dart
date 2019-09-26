@@ -18,20 +18,22 @@ class CredentialsManagerError implements Exception {
   final CredentialErrorType type;
   final String description;
 
-  CredentialsManagerError({this.type, this.description});
+  CredentialsManagerError._({this.type, this.description});
 
   @override
   String toString() {
     return "Credentials Error($type, $description)";
   }
 
-  factory CredentialsManagerError.fromJSON(Map<String, dynamic> json) {
-    final typeString = json['error_type'] as String;
+  factory CredentialsManagerError.from(PlatformException e) {
+    final details = Map<String, dynamic>.from(e.details);
+
+    final typeString = details['error_type'] as String;
 
     final type = _hash[typeString];
 
-    final description = json['error_description'] as String;
+    final description = details['error_description'] as String;
 
-    return CredentialsManagerError(type: type, description: description);
+    return CredentialsManagerError._(type: type, description: description);
   }
 }
