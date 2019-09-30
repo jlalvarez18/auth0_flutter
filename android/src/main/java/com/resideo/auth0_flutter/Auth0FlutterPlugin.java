@@ -1,5 +1,7 @@
 package com.resideo.auth0_flutter;
 
+import androidx.annotation.NonNull;
+
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
@@ -12,10 +14,15 @@ public class Auth0FlutterPlugin implements MethodCallHandler {
   public static void registerWith(Registrar registrar) {
     final MethodChannel channel = new MethodChannel(registrar.messenger(), "auth0_flutter");
     channel.setMethodCallHandler(new Auth0FlutterPlugin());
+
+    WebAuthController.registerWith(registrar);
+    AuthenticationController.registerWith(registrar);
+    CredentialsController.registerWith(registrar);
+    UsersController.registerWith(registrar);
   }
 
   @Override
-  public void onMethodCall(MethodCall call, Result result) {
+  public void onMethodCall(MethodCall call, @NonNull Result result) {
     if (call.method.equals("getPlatformVersion")) {
       result.success("Android " + android.os.Build.VERSION.RELEASE);
     } else {

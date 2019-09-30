@@ -1,0 +1,4 @@
+<resources>
+    <string name="com_auth0_client_id"> </string>
+    <string name="com_auth0_domain"> </string>
+</resources>

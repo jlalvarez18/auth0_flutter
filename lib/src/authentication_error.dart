@@ -1,10 +1,13 @@
 part of auth0_flutter;
 
 class AuthenticationError implements Exception {
-  final Map<String, dynamic> info;
+  final String code;
   final int statusCode;
+  final String description;
+  final Map<String, dynamic> info;
 
-  AuthenticationError._({this.info, this.statusCode});
+  AuthenticationError._(
+      {this.code, this.statusCode, this.description, this.info});
 
   @override
   String toString() {
@@ -15,6 +18,9 @@ class AuthenticationError implements Exception {
     final details = Map<String, dynamic>.from(e.details);
 
     return AuthenticationError._(
-        info: details['info'], statusCode: details['statusCode']);
+        code: details['code'],
+        statusCode: details['statusCode'],
+        description: details['description'],
+        info: details['info']);
   }
 }

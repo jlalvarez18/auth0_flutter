@@ -64,7 +64,7 @@ class AuthenticationController: NSObject, FlutterPlugin {
                         case .success(let credentials):
                             sendResult(result, data: credentials.toJSON(), error: nil)
                         case .failure(let error):
-                            sendResult(result, data: nil, error: error)
+                            sendResult(result, data: nil, error: CustomAuthenticationError(error as! AuthenticationError))
                         }
                 }
                 
@@ -75,7 +75,7 @@ class AuthenticationController: NSObject, FlutterPlugin {
                     case .success(let credentials):
                         sendResult(result, data: credentials.toJSON(), error: nil)
                     case .failure(let error):
-                        sendResult(result, data: nil, error: error)
+                        sendResult(result, data: nil, error: CustomAuthenticationError(error as! AuthenticationError))
                     }
                 }
                 
@@ -91,7 +91,7 @@ class AuthenticationController: NSObject, FlutterPlugin {
                         case .success(let credentials):
                             sendResult(result, data: credentials.toJSON(), error: nil)
                         case .failure(let error):
-                            sendResult(result, data: nil, error: error)
+                            sendResult(result, data: nil, error: CustomAuthenticationError(error as! AuthenticationError))
                         }
                 }
                 
@@ -108,7 +108,7 @@ class AuthenticationController: NSObject, FlutterPlugin {
                         case .success(let user):
                             sendResult(result, data: databaseUserToJSON(user), error: nil)
                         case .failure(let error):
-                            sendResult(result, data: nil, error: error)
+                            sendResult(result, data: nil, error: CustomAuthenticationError(error as! AuthenticationError))
                         }
                 }
                 
@@ -119,7 +119,7 @@ class AuthenticationController: NSObject, FlutterPlugin {
                     case .success(_):
                         sendResult(result, data: nil, error: nil)
                     case .failure(let error):
-                        sendResult(result, data: nil, error: error)
+                        sendResult(result, data: nil, error: CustomAuthenticationError(error as! AuthenticationError))
                     }
                 }
                 
@@ -130,7 +130,7 @@ class AuthenticationController: NSObject, FlutterPlugin {
                     case .success(_):
                         sendResult(result, data: nil, error: nil)
                     case .failure(let error):
-                        sendResult(result, data: nil, error: error)
+                        sendResult(result, data: nil, error: CustomAuthenticationError(error as! AuthenticationError))
                     }
                 }
                 
@@ -141,7 +141,7 @@ class AuthenticationController: NSObject, FlutterPlugin {
                     case .success(_):
                         sendResult(result, data: nil, error: nil)
                     case .failure(let error):
-                        sendResult(result, data: nil, error: error)
+                        sendResult(result, data: nil, error: CustomAuthenticationError(error as! AuthenticationError))
                     }
                 }
                 
@@ -152,7 +152,7 @@ class AuthenticationController: NSObject, FlutterPlugin {
                     case .success(let profile):
                         sendResult(result, data: profile.toJSON(), error: nil)
                     case .failure(let error):
-                        sendResult(result, data: nil, error: error)
+                        sendResult(result, data: nil, error: CustomAuthenticationError(error as! AuthenticationError))
                     }
                 }
                 
@@ -163,7 +163,7 @@ class AuthenticationController: NSObject, FlutterPlugin {
                     case .success(let userInfo):
                         sendResult(result, data: userInfo.toJSON(), error: nil)
                     case .failure(let error):
-                        sendResult(result, data: nil, error: error)
+                        sendResult(result, data: nil, error: CustomAuthenticationError(error as! AuthenticationError))
                     }
                 }
                 
@@ -174,7 +174,7 @@ class AuthenticationController: NSObject, FlutterPlugin {
                     case .success(let credentials):
                         sendResult(result, data: credentials.toJSON(), error: nil)
                     case .failure(let error):
-                        sendResult(result, data: nil, error: error)
+                        sendResult(result, data: nil, error: CustomAuthenticationError(error as! AuthenticationError))
                     }
                 }
                 
@@ -185,7 +185,7 @@ class AuthenticationController: NSObject, FlutterPlugin {
                     case .success(let credentials):
                         sendResult(result, data: credentials.toJSON(), error: nil)
                     case .failure(let error):
-                        sendResult(result, data: nil, error: error)
+                        sendResult(result, data: nil, error: CustomAuthenticationError(error as! AuthenticationError))
                     }
                 }
                 
@@ -196,7 +196,7 @@ class AuthenticationController: NSObject, FlutterPlugin {
                     case .success(let credentials):
                         sendResult(result, data: credentials.toJSON(), error: nil)
                     case .failure(let error):
-                        sendResult(result, data: nil, error: error)
+                        sendResult(result, data: nil, error: CustomAuthenticationError(error as! AuthenticationError))
                     }
                 }
                 
@@ -207,7 +207,7 @@ class AuthenticationController: NSObject, FlutterPlugin {
                     case .success(let credentials):
                         sendResult(result, data: credentials.toJSON(), error: nil)
                     case .failure(let error):
-                        sendResult(result, data: nil, error: error)
+                        sendResult(result, data: nil, error: CustomAuthenticationError(error as! AuthenticationError))
                     }
                 }
                 
@@ -218,7 +218,7 @@ class AuthenticationController: NSObject, FlutterPlugin {
                     case .success(let credentials):
                         sendResult(result, data: credentials.toJSON(), error: nil)
                     case .failure(let error):
-                        sendResult(result, data: nil, error: error)
+                        sendResult(result, data: nil, error: CustomAuthenticationError(error as! AuthenticationError))
                     }
                 }
                 
@@ -229,7 +229,7 @@ class AuthenticationController: NSObject, FlutterPlugin {
                     case .success(_):
                         sendResult(result, data: nil, error: nil)
                     case .failure(let error):
-                        sendResult(result, data: nil, error: error)
+                        sendResult(result, data: nil, error: CustomAuthenticationError(error as! AuthenticationError))
                     }
                 }
                 
@@ -240,7 +240,7 @@ class AuthenticationController: NSObject, FlutterPlugin {
                     case .success(let dict):
                         sendResult(result, data: dict, error: nil)
                     case .failure(let error):
-                        sendResult(result, data: nil, error: error)
+                        sendResult(result, data: nil, error: CustomAuthenticationError(error as! AuthenticationError))
                     }
                 }
             }
