@@ -97,7 +97,7 @@ class WebAuth {
       'parameters': _parameters
     };
 
-    final json = await invokeMapMethod(
+    final json = await invokeMapMethod<String, dynamic>(
         channel: _channel,
         method: WebAuthMethod.start,
         arguments: args,

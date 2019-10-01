@@ -4,14 +4,16 @@ enum CredentialErrorType {
   noCredentials,
   noRefreshToken,
   failedRefresh,
-  touchFailed
+  touchFailed,
+  unknown
 }
 
 final _hash = <String, CredentialErrorType>{
   'no_credentials': CredentialErrorType.noCredentials,
   'no_refresh_token': CredentialErrorType.noRefreshToken,
   'failed_refresh': CredentialErrorType.failedRefresh,
-  'touch_failed': CredentialErrorType.touchFailed
+  'touch_failed': CredentialErrorType.touchFailed,
+  'unknown': CredentialErrorType.unknown
 };
 
 class CredentialsManagerError implements Exception {

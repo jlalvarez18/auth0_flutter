@@ -43,7 +43,7 @@ class CredentialsManagerController: NSObject, FlutterPlugin {
             switch method {
             case .enableBioMetrics:
                 manager.enableBiometrics(withTitle: managerArgs.title ?? "", cancelTitle: managerArgs.cancelTitle, fallbackTitle: managerArgs.fallbackTitle)
-                sendResult(result, data: nil, error: nil)
+                sendResult(result, data: true, error: nil)
                 
             case .storeCredentials:
                 guard let credentialsArg = managerArgs.credentialsDict() else {

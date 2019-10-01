@@ -1,12 +1,17 @@
 package com.resideo.auth0_flutter;
 
 import android.app.Dialog;
-import androidx.annotation.NonNull;
-import org.json.JSONObject;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Looper;
 
-import java.util.ArrayList;
+import androidx.annotation.MainThread;
+import androidx.annotation.NonNull;
+import androidx.annotation.UiThread;
+
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.Executor;
 
 import com.auth0.android.Auth0;
 import com.auth0.android.Auth0Exception;
@@ -25,17 +30,15 @@ import io.flutter.plugin.common.PluginRegistry.Registrar;
 
 public class WebAuthController implements MethodCallHandler {
     private final Registrar registrar;
-    private final MethodChannel channel;
 
     static void registerWith(Registrar registrar) {
         final MethodChannel channel = new MethodChannel(registrar.messenger(), "plugins.auth0_flutter.io/web_auth");
 
-        channel.setMethodCallHandler(new WebAuthController(registrar, channel));
+        channel.setMethodCallHandler(new WebAuthController(registrar));
     }
 
-    private WebAuthController(Registrar registrar, MethodChannel channel) {
+    private WebAuthController(Registrar registrar) {
         this.registrar = registrar;
-        this.channel = channel;
     }
 
     @Override
@@ -55,37 +58,59 @@ public class WebAuthController implements MethodCallHandler {
 
                 webAuth.start(registrar.activity(), new AuthCallback() {
                     @Override
-                    public void onFailure(@NonNull Dialog dialog) {
-
-                    }
+                    public void onFailure(@NonNull Dialog dialog) {}
 
                     @Override
                     public void onFailure(AuthenticationException exception) {
-                        final JSONObject obj = JSONHelpers.authErrorToJSON(exception);
+                        final HashMap<String, Object> obj = JSONHelpers.authErrorToJSON(exception);
 
-                        result.error("", exception.getLocalizedMessage(), obj);
+                        final String message = exception.getLocalizedMessage();
+
+                        registrar.activity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                result.error("", message, obj);
+                            }
+                        });
                     }
 
                     @Override
                     public void onSuccess(@NonNull Credentials credentials) {
-                        final JSONObject obj = JSONHelpers.credentialsToJSON(credentials);
+                        final HashMap<String, Object> obj = JSONHelpers.credentialsToJSON(credentials);
 
-                        result.success(obj);
+                        registrar.activity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                result.success(obj);
+                            }
+                        });
                     }
                 });
                 break;
             }
 
             case WebAuthMethodName.clearSession: {
-                WebAuthProvider.logout(auth0).start(registrar.activeContext(), new VoidCallback() {
+                WebAuthProvider.logout(auth0)
+                        .withScheme("demo")
+                        .start(registrar.activeContext(), new VoidCallback() {
                     @Override
                     public void onSuccess(Void payload) {
-                        result.success(true);
+                        registrar.activity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                result.success(true);
+                            }
+                        });
                     }
 
                     @Override
                     public void onFailure(Auth0Exception error) {
-                        result.success(false);
+                        registrar.activity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                result.success(false);
+                            }
+                        });
                     }
                 });
                 break;
@@ -99,6 +124,8 @@ public class WebAuthController implements MethodCallHandler {
 
     private WebAuthProvider.Builder webAuth(Auth0 auth0, MethodCall methodCall) {
         final WebAuthProvider.Builder webAuth = WebAuthProvider.login(auth0);
+
+        webAuth.withScheme("demo");
 
         final List<String> responseTypeStrings = methodCall.argument("responseType");
         assert responseTypeStrings != null;

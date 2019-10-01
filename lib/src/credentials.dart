@@ -25,10 +25,12 @@ class Credentials {
         this.scope = json['scope'];
 
   Map<String, dynamic> toJSON() {
+    final now = DateTime.now();
+
     return <String, dynamic>{
       'access_token': accessToken,
       'token_type': tokenType,
-      'expires_in': DateTime.now().difference(expiresIn).inSeconds,
+      'expires_in': expiresIn.difference(now).inSeconds,
       'refresh_token': refreshToken,
       'id_token': idToken,
       'scope': scope

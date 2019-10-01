@@ -23,6 +23,7 @@ class _MyAppState extends State<MyApp> {
 
   final _webAuth = Auth0(clientId: _clientId, domain: _domain)
       .webAuth()
+      .audience('https://resideo.auth0.com/userinfo')
       .scope('openid email offline_access');
 
   bool _credentialsStored = false;
@@ -52,6 +53,7 @@ class _MyAppState extends State<MyApp> {
     if (!mounted) return;
 
     setState(() {
+      _credentialsStored = credentials != null;
       _credentials = credentials;
     });
   }
@@ -73,20 +75,15 @@ class _MyAppState extends State<MyApp> {
           appBar: AppBar(
             title: const Text('Plugin example app'),
           ),
-          body: Padding(
-            padding: const EdgeInsets.all(18.0),
+          body: Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 if (_credentials != null) ...[
-                  Text(
-                    'accessToken: ${_credentials.accessToken}',
-                    textAlign: TextAlign.center,
-                  ),
-                  Text(
-                    'tokenType: ${_credentials.tokenType}',
-                    textAlign: TextAlign.center,
-                  ),
+                  Text('Access Token:'),
+                  Text(_credentials.accessToken),
+                  Text('Token Type:'),
+                  Text(_credentials.tokenType),
                   FlatButton(
                     color: Colors.blueGrey,
                     child: Text(_credentialsStored
@@ -95,6 +92,8 @@ class _MyAppState extends State<MyApp> {
                     onPressed: () async {
                       if (_credentialsStored) {
                         await _credManager.clearCredentials();
+                        await _webAuth.clearSession(false);
+
                         _credentials = null;
                       } else {
                         await _credManager.storeCredentials(_credentials);
@@ -104,6 +103,14 @@ class _MyAppState extends State<MyApp> {
                           await _credManager.hasValidCredentials();
 
                       setState(() {});
+                    },
+                  ),
+                  FlatButton(
+                    color: Colors.amber,
+                    child: Text("Enable Biometrics"),
+                    onPressed: () async {
+                      await _credManager.enableBiometrics(
+                          title: "Let's do this!");
                     },
                   )
                 ] else

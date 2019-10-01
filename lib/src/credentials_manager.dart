@@ -17,7 +17,7 @@ class CredentialsManager {
           'storeKey': storeKey
         };
 
-  Future<void> enableBiometrics(
+  Future<bool> enableBiometrics(
       {@required String title,
       String cancelTitle,
       String fallbackTitle}) async {
@@ -28,11 +28,13 @@ class CredentialsManager {
     args['cancelTitle'] = cancelTitle;
     args['fallbackTitle'] = fallbackTitle;
 
-    await invokeMapMethod<String, dynamic>(
+    final success = await invokeMethod<bool>(
         channel: _channel,
         method: CredentialsManagerMethod.enableBioMetrics,
         arguments: args,
         exceptionHandler: _errorHandler);
+
+    return success;
   }
 
   Future<bool> storeCredentials(Credentials credentials) async {
