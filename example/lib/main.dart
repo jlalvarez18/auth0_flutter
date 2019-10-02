@@ -39,6 +39,7 @@ class _MyAppState extends State<MyApp> {
     Credentials credentials;
     // Platform messages may fail, so we use a try/catch PlatformException.
     try {
+      await _credManager.enableBiometrics(title: "Secure all the things");
       credentials = await _credManager.getCredentials();
     } on CredentialsManagerError catch (e) {
       print(e.type);
@@ -103,14 +104,6 @@ class _MyAppState extends State<MyApp> {
                           await _credManager.hasValidCredentials();
 
                       setState(() {});
-                    },
-                  ),
-                  FlatButton(
-                    color: Colors.amber,
-                    child: Text("Enable Biometrics"),
-                    onPressed: () async {
-                      await _credManager.enableBiometrics(
-                          title: "Let's do this!");
                     },
                   )
                 ] else

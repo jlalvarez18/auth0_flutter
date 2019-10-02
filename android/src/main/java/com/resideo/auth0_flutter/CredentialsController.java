@@ -25,6 +25,7 @@ import io.flutter.plugin.common.PluginRegistry.Registrar;
 
 public class CredentialsController implements MethodCallHandler {
     private final Registrar registrar;
+    private SecureCredentialsManager _manager;
 
     static void registerWith(Registrar registrar) {
         final MethodChannel channel = new MethodChannel(registrar.messenger(), "plugins.auth0_flutter.io/credentials_manager");
@@ -36,18 +37,27 @@ public class CredentialsController implements MethodCallHandler {
         this.registrar = registrar;
     }
 
+    private SecureCredentialsManager getCredentialsManager(MethodCall methodCall) {
+        if (_manager == null) {
+            final String clientId = methodCall.argument("clientId");
+            final String domain = methodCall.argument("domain");
+
+            assert clientId != null;
+            assert domain != null;
+
+            final Auth0 auth0 = new Auth0(clientId, domain);
+            final AuthenticationAPIClient apiClient = new AuthenticationAPIClient(auth0);
+            final SharedPreferencesStorage storage = new SharedPreferencesStorage(registrar.activeContext());
+
+            _manager = new SecureCredentialsManager(registrar.activeContext(), apiClient, storage);
+        }
+
+        return _manager;
+    }
+
     @Override
     public void onMethodCall(@NonNull MethodCall methodCall, @NonNull final Result result) {
-        final String clientId = methodCall.argument("clientId");
-        final String domain = methodCall.argument("domain");
-
-        assert clientId != null;
-        assert domain != null;
-
-        final Auth0 auth0 = new Auth0(clientId, domain);
-        final AuthenticationAPIClient apiClient = new AuthenticationAPIClient(auth0);
-        final SharedPreferencesStorage storage = new SharedPreferencesStorage(registrar.activeContext());
-        final SecureCredentialsManager manager = new SecureCredentialsManager(registrar.activeContext(), apiClient, storage);
+        final SecureCredentialsManager manager = getCredentialsManager(methodCall);
 
         switch (methodCall.method) {
             case CredentialsMethodName.enableBioMetrics: {

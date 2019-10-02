@@ -17,6 +17,8 @@ class CredentialsManagerController: NSObject, FlutterPlugin {
         case getCredentials
     }
     
+    private var credsManager: CredentialsManager?
+    
     static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(name: "plugins.auth0_flutter.io/credentials_manager", binaryMessenger: registrar.messenger())
         
@@ -25,28 +27,45 @@ class CredentialsManagerController: NSObject, FlutterPlugin {
         registrar.addMethodCallDelegate(instance, channel: channel)
     }
     
+    private func getCredentialsManager(data: Data) throws -> CredentialsManager {
+        if let manager = credsManager {
+            return manager
+        }
+        
+        let managerArgs = try CredentialsManagerArguments.decode(data: data)
+        let auth = authentication(clientId: managerArgs.clientId, domain: managerArgs.domain)
+        let manager = CredentialsManager(authentication: auth, storeKey: managerArgs.storeKey ?? "credentials")
+        
+        self.credsManager = manager
+        
+        return manager
+    }
+    
     func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+        guard let method = MethodName(rawValue: call.method) else {
+            sendResult(result, data: nil, error: Auth0PluginError.unknownMethod(call.method))
+            return
+        }
+        
         let args = call.arguments as? [String: Any] ?? [:]
         
         do {
             let data = try JSONSerialization.data(withJSONObject: args, options: [])
-            let managerArgs = try CredentialsManagerArguments.decode(data: data)
             
-            let auth = authentication(clientId: managerArgs.clientId, domain: managerArgs.domain)
-            var manager = CredentialsManager(authentication: auth)
-            
-            guard let method = MethodName(rawValue: call.method) else {
-                sendResult(result, data: nil, error: Auth0PluginError.unknownMethod(call.method))
-                return
-            }
+            var manager = try getCredentialsManager(data: data)
             
             switch method {
             case .enableBioMetrics:
-                manager.enableBiometrics(withTitle: managerArgs.title ?? "", cancelTitle: managerArgs.cancelTitle, fallbackTitle: managerArgs.fallbackTitle)
+                let args = try CredentialsBiometricsArgs.decode(data: data)
+                
+                manager.enableBiometrics(withTitle: args.title ?? "", cancelTitle: args.cancelTitle, fallbackTitle: args.fallbackTitle)
+                
                 sendResult(result, data: true, error: nil)
                 
             case .storeCredentials:
-                guard let credentialsArg = managerArgs.credentialsDict() else {
+                let credArgs = try CredentialsArguments.decode(data: data)
+                
+                guard let credentialsArg = credArgs.credentialsDict() else {
                     sendResult(result, data: nil, error: nil)
                     return
                 }
@@ -65,7 +84,9 @@ class CredentialsManagerController: NSObject, FlutterPlugin {
                 sendResult(result, data: success, error: nil)
                 
             case .getCredentials:
-                manager.credentials { (error, credentials) in
+                let args = try GetCredentialsArgs.decode(data: data)
+                
+                manager.credentials(withScope: args.scope) { (error, credentials) in
                     if let credentials = credentials {
                         sendResult(result, data: credentials.toJSON(), error: nil)
                     } else if let error = error {
@@ -85,14 +106,22 @@ private struct CredentialsManagerArguments: Decodable {
     let clientId: String
     let domain: String
     let storeKey: String?
-    
+}
+
+private struct CredentialsBiometricsArgs: Decodable {
     let title: String?
     let cancelTitle: String?
     let fallbackTitle: String?
-    
+}
+
+private struct CredentialsArguments: Decodable {
     private let credentials: [String: AnyDecodable]?
     
     func credentialsDict() -> [String: Any]? {
         return credentials?.mapValues { $0.value }
     }
+}
+
+private struct GetCredentialsArgs: Decodable {
+    let scope: String?
 }
