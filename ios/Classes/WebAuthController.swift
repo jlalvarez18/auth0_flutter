@@ -31,12 +31,13 @@ class WebAuthController: NSObject, FlutterPlugin {
             }
             
             let data = try JSONSerialization.data(withJSONObject: args, options: [])
-            let authArguments = try WebAuthArguments.decode(data: data)
-            
-            let webAuth = authArguments.webAuth()
             
             switch method {
             case .start:
+                let authArguments = try WebAuthArguments.decode(data: data)
+                
+                let webAuth = authArguments.webAuth()
+                
                 webAuth.start { (authResult) in
                     switch authResult {
                     case .success(let credentials):
@@ -50,9 +51,19 @@ class WebAuthController: NSObject, FlutterPlugin {
                 }
                 
             case .clearSession:
-                let dict = call.arguments as? [String: Bool] ?? [:]
+                guard let clientId = args["clientId"] as? String else {
+                    throw Auth0PluginError.missingArgument("clientId")
+                }
                 
-                webAuth.clearSession(federated: dict["federated"] ?? false) { (success) in
+                guard let domain = args["domain"] as? String else {
+                    throw Auth0PluginError.missingArgument("domain")
+                }
+                
+                let federated = args["federated"] as? Bool ?? false
+                
+                let webAuth = Auth0.webAuth(clientId: clientId, domain: domain)
+                
+                webAuth.clearSession(federated: federated) { (success) in
                     sendResult(result, data: success, error: nil)
                 }
             }

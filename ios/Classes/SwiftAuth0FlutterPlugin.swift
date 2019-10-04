@@ -4,12 +4,15 @@ import Auth0
 
 enum Auth0PluginError: Swift.Error {
     case unknownMethod(String)
+    case missingArgument(String)
     case unknownError
     
     func toFlutterError() -> FlutterError {
         switch self {
         case .unknownMethod(let name):
             return FlutterError(code: "", message: "Unknown method name: \(name)", details: nil)
+        case .missingArgument(let arg):
+            return FlutterError(code: "", message: "Missing argument: \(arg)", details: nil)
         case .unknownError:
             return FlutterError(code: "", message: "Unknown Error", details: nil)
         }

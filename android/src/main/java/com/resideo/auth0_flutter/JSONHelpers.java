@@ -2,6 +2,7 @@ package com.resideo.auth0_flutter;
 
 import com.auth0.android.authentication.AuthenticationException;
 import com.auth0.android.authentication.storage.CredentialsManagerException;
+import com.auth0.android.management.ManagementException;
 import com.auth0.android.result.Credentials;
 
 import java.util.HashMap;
@@ -71,6 +72,14 @@ class JSONHelpers {
         }
 
         obj.put("error_description", exception.getLocalizedMessage());
+
+        return obj;
+    }
+
+    static HashMap<String, String> managementExceptionToJSON(ManagementException exception) {
+        HashMap<String, String> obj = new HashMap<>();
+        obj.put("code", exception.getCode());
+        obj.put("description", exception.getDescription());
 
         return obj;
     }

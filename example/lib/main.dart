@@ -4,11 +4,9 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 
 import 'package:auth0_flutter/auth0_flutter.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() => runApp(MyApp());
-
-final _clientId = '4rQXHhN6VX6GE00QY0kxHvJO5h1VyxNa';
-final _domain = 'resideo.auth0.com';
 
 class MyApp extends StatefulWidget {
   @override
@@ -18,29 +16,53 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   Credentials _credentials;
 
-  final _credManager =
-      Auth0(clientId: _clientId, domain: _domain).credentialsManager();
+  set credentials(Credentials value) {
+    _credentials = value;
 
-  final _webAuth = Auth0(clientId: _clientId, domain: _domain)
-      .webAuth()
-      .audience('https://resideo.auth0.com/userinfo')
-      .scope('openid email offline_access');
+    print('ACCESS TOKEN:');
+    print(_credentials?.accessToken);
+
+    print('ID TOKEN:');
+    print(_credentials?.idToken);
+  }
+
+  final _dotEnv = DotEnv();
+  Auth0 _auth0;
+  CredentialsManager _credManager;
+  WebAuth _webAuth;
 
   bool _credentialsStored = false;
 
   @override
   void initState() {
     super.initState();
+
     initPlatformState();
   }
 
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
-    Credentials credentials;
+    Credentials creds;
+
     // Platform messages may fail, so we use a try/catch PlatformException.
     try {
+      await _dotEnv.load('assets/.env');
+
+      final clientId = _dotEnv.env['CLIENT_ID'];
+      final domain = _dotEnv.env['DOMAIN'];
+      final audience = _dotEnv.env['AUDIENCE'];
+
+      _auth0 = Auth0(clientId: clientId, domain: domain);
+      _credManager = _auth0.credentialsManager();
+      _webAuth = _auth0
+          .webAuth()
+          .audience(audience)
+          .scope('openid email offline_access');
+
       await _credManager.enableBiometrics(title: "Secure all the things");
-      credentials = await _credManager.getCredentials();
+
+      creds = await _credManager.getCredentials();
+      _credentialsStored = await _credManager.hasValidCredentials();
     } on CredentialsManagerError catch (e) {
       print(e.type);
       print(e.description);
@@ -54,8 +76,7 @@ class _MyAppState extends State<MyApp> {
     if (!mounted) return;
 
     setState(() {
-      _credentialsStored = credentials != null;
-      _credentials = credentials;
+      credentials = creds;
     });
   }
 
@@ -83,8 +104,6 @@ class _MyAppState extends State<MyApp> {
                 if (_credentials != null) ...[
                   Text('Access Token:'),
                   Text(_credentials.accessToken),
-                  Text('Token Type:'),
-                  Text(_credentials.tokenType),
                   FlatButton(
                     color: Colors.blueGrey,
                     child: Text(_credentialsStored
@@ -93,9 +112,8 @@ class _MyAppState extends State<MyApp> {
                     onPressed: () async {
                       if (_credentialsStored) {
                         await _credManager.clearCredentials();
-                        await _webAuth.clearSession(false);
 
-                        _credentials = null;
+                        credentials = null;
                       } else {
                         await _credManager.storeCredentials(_credentials);
                       }
@@ -112,9 +130,7 @@ class _MyAppState extends State<MyApp> {
                       color: Colors.blueGrey,
                       child: Text('Open Web Auth'),
                       onPressed: () async {
-                        _credentials = await webAuth();
-
-                        print(_credentials?.accessToken);
+                        credentials = await webAuth();
 
                         setState(() {});
                       },

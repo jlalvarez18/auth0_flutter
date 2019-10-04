@@ -110,6 +110,7 @@ class WebAuth {
     final arguments = <String, dynamic>{
       'clientId': clientId,
       'domain': domain,
+      'universalLink': _universalLink,
       'federated': federated
     };
 
