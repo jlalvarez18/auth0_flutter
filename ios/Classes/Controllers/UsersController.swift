@@ -46,7 +46,7 @@ class UsersController: NSObject, FlutterPlugin {
                     case .success(let object):
                         sendResult(result, data: object, error: nil)
                     case .failure(let error):
-                        sendResult(result, data: nil, error: error)
+                        sendResult(result, data: nil, error: CustomManagementError(error as! ManagementError))
                     }
                 }
                 
@@ -57,7 +57,7 @@ class UsersController: NSObject, FlutterPlugin {
                     case .success(let object):
                         sendResult(result, data: object, error: nil)
                     case .failure(let error):
-                        sendResult(result, data: nil, error: error)
+                        sendResult(result, data: nil, error: CustomManagementError(error as! ManagementError))
                     }
                 }
                 
@@ -68,7 +68,7 @@ class UsersController: NSObject, FlutterPlugin {
                     case .success(let object):
                         sendResult(result, data: object, error: nil)
                     case .failure(let error):
-                        sendResult(result, data: nil, error: error)
+                        sendResult(result, data: nil, error: CustomManagementError(error as! ManagementError))
                     }
                 }
                 
@@ -79,7 +79,7 @@ class UsersController: NSObject, FlutterPlugin {
                     case .success(let object):
                         sendResult(result, data: object, error: nil)
                     case .failure(let error):
-                        sendResult(result, data: nil, error: error)
+                        sendResult(result, data: nil, error: CustomManagementError(error as! ManagementError))
                     }
                 }
                 
@@ -90,7 +90,7 @@ class UsersController: NSObject, FlutterPlugin {
                     case .success(let object):
                         sendResult(result, data: object, error: nil)
                     case .failure(let error):
-                        sendResult(result, data: nil, error: error)
+                        sendResult(result, data: nil, error: CustomManagementError(error as! ManagementError))
                     }
                 }
                 
@@ -101,7 +101,7 @@ class UsersController: NSObject, FlutterPlugin {
                     case .success(let object):
                         sendResult(result, data: object, error: nil)
                     case .failure(let error):
-                        sendResult(result, data: nil, error: error)
+                        sendResult(result, data: nil, error: CustomManagementError(error as! ManagementError))
                     }
                 }
             }

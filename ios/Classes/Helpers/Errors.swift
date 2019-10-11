@@ -48,12 +48,26 @@ class WebAuthErrorCustom: CustomNSError {
     }
 }
 
-extension ManagementError {
+class CustomManagementError: CustomNSError {
+    private let error: ManagementError;
+    
+    init(_ error: ManagementError) {
+        self.error = error
+    }
+    
+    public var errorCode: Int {
+        return error.errorCode
+    }
+    
     public var errorUserInfo: [String : Any] {
         return [
-            "code": code,
-            "description": description,
+            "code": error.code,
+            "description": error.description,
         ]
+    }
+    
+    public var localizedDescription: String {
+        return error.description
     }
 }
 
@@ -100,7 +114,7 @@ class CustomAuthenticationError: CustomNSError {
         self.error = error
     }
     
-    var errorCode: Int {
+    public var errorCode: Int {
         return error.errorCode
     }
     
