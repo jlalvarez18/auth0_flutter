@@ -15,6 +15,14 @@ class Profile {
   final Map<String, dynamic> additionalAttributes;
   final List<Identity> identities;
 
+  Map<String, dynamic> get userMetadata {
+    return additionalAttributes['user_metadata'] ?? {};
+  }
+
+  Map<String, dynamic> get appMetadata {
+    return additionalAttributes['app_metadata'] ?? {};
+  }
+
   Profile._(
       {this.id,
       this.name,

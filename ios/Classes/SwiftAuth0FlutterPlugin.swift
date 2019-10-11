@@ -30,6 +30,7 @@ public class SwiftAuth0FlutterPlugin: NSObject, FlutterPlugin {
         WebAuthController.register(with: registrar)
         AuthenticationController.register(with: registrar)
         CredentialsManagerController.register(with: registrar)
+        UsersController.register(with: registrar)
     }
 
     public func application(_ application: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {

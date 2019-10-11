@@ -131,7 +131,7 @@ class Users {
   }
 
   Map<String, dynamic> _generateArguments(Map<String, dynamic> other) {
-    final args = {'token': token, 'domain': domain};
+    final args = <String, dynamic>{'token': token, 'domain': domain};
 
     if (other != null) {
       args.addAll(other);
