@@ -89,9 +89,9 @@ class UserInfo {
     final middleName = json['middleName'];
     final nickname = json['nickname'];
     final preferredUsername = json['preferredUsername'];
-    final profile = Uri.tryParse(json['profile']);
-    final picture = Uri.tryParse(json['picture']);
-    final website = Uri.tryParse(json['website']);
+    final profile = json['profile'];
+    final picture = json['picture'];
+    final website = json['website'];
     final email = json['email'];
     final emailVerified = json['emailVerified'];
     final gender = json['gender'];
@@ -101,7 +101,7 @@ class UserInfo {
     final phoneNumber = json['phoneNumber'];
     final phoneNumberVerified = json['phoneNumberVerified'];
     final address = json['address'];
-    final updatedAt = dateFromString(json['updatedAt']);
+    final updatedAt = dateFromDouble(json['updatedAt']);
 
     final customClaims = Map.fromEntries(json.entries);
     UserInfo.publicClaims.forEach((v) => customClaims.remove(v));
@@ -114,9 +114,9 @@ class UserInfo {
         middleName: middleName,
         nickname: nickname,
         preferredUsername: preferredUsername,
-        profile: profile,
-        picture: picture,
-        website: website,
+        profile: profile != null ? Uri.tryParse(profile) : null,
+        picture: picture != null ? Uri.tryParse(picture) : null,
+        website: website != null ? Uri.tryParse(website) : null,
         email: email,
         emailVerified: emailVerified,
         gender: gender,

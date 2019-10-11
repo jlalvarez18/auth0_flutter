@@ -350,7 +350,7 @@ class Authentication {
   }
 
   Map<String, dynamic> _generateArguments(Map<String, dynamic> other) {
-    final args = {'clientId': clientId, 'domain': domain};
+    final args = <String, dynamic>{'clientId': clientId, 'domain': domain};
 
     if (other != null) {
       args.addAll(other);

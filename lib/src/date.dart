@@ -7,10 +7,21 @@ DateTime dateFromString(String value) {
 
   final intValue = int.tryParse(value);
   if (intValue != null) {
-    final seconds = intValue * Duration.millisecondsPerSecond;
+    final milliseconds = intValue * Duration.millisecondsPerSecond;
 
-    return DateTime.fromMillisecondsSinceEpoch(seconds, isUtc: true);
+    return DateTime.fromMillisecondsSinceEpoch(milliseconds, isUtc: true);
   }
 
   return DateTime.tryParse(value);
+}
+
+DateTime dateFromDouble(double value) {
+  if (value == null) {
+    return null;
+  }
+
+  final intValue = value.toInt();
+  final milliseconds = intValue * Duration.millisecondsPerMinute;
+
+  return DateTime.fromMillisecondsSinceEpoch(milliseconds);
 }
