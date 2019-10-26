@@ -90,9 +90,14 @@ public class WebAuthController implements MethodCallHandler {
             }
 
             case WebAuthMethodName.clearSession: {
-                WebAuthProvider.logout(auth0)
-                        .withScheme("demo")
-                        .start(registrar.activeContext(), new VoidCallback() {
+                final WebAuthProvider.LogoutBuilder builder = WebAuthProvider.logout(auth0);
+
+                final String scheme = methodCall.argument("scheme");
+                if (scheme != null) {
+                    builder.withScheme(scheme);
+                }
+
+                builder.start(registrar.activeContext(), new VoidCallback() {
                     @Override
                     public void onSuccess(Void payload) {
                         registrar.activity().runOnUiThread(new Runnable() {
@@ -125,7 +130,10 @@ public class WebAuthController implements MethodCallHandler {
     private WebAuthProvider.Builder webAuth(Auth0 auth0, MethodCall methodCall) {
         final WebAuthProvider.Builder webAuth = WebAuthProvider.login(auth0);
 
-        webAuth.withScheme("demo");
+        final String scheme = methodCall.argument("scheme");
+        if (scheme != null) {
+            webAuth.withScheme(scheme);
+        }
 
         final List<String> responseTypeStrings = methodCall.argument("responseType");
         assert responseTypeStrings != null;

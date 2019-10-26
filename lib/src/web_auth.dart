@@ -27,6 +27,14 @@ class WebAuth {
     return this;
   }
 
+  // Specify a custom Scheme to use on the Callback Uri. Default scheme is 'https'
+  // Used for Android client.
+  // No-op on iOS
+  WebAuth scheme(String value) {
+    _parameters['scheme'] = value;
+    return this;
+  }
+
   /// Specify a connection name to be used to authenticate.
   /// By default no connection is specified, so the hosted login page will be displayed
   WebAuth connection(String value) {
