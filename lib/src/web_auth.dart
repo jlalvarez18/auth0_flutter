@@ -19,6 +19,7 @@ class WebAuth {
   bool _universalLink = false;
   List<ResponseType> _responseType = [ResponseType.code];
   String _nonce;
+  String _scheme;
 
   /// For redirect url instead of a custom scheme it will use `https` and iOS 9 Universal Links.
   /// Before enabling this flag you'll need to configure Universal Links
@@ -31,7 +32,7 @@ class WebAuth {
   // Used for Android client.
   // No-op on iOS
   WebAuth scheme(String value) {
-    _parameters['scheme'] = value;
+    _scheme = value;
     return this;
   }
 
@@ -102,7 +103,8 @@ class WebAuth {
       'responseType':
           _responseType.map((v) => _responseTypeToString(v)).toList(),
       'nonce': _nonce,
-      'parameters': _parameters
+      'parameters': _parameters,
+      'scheme': _scheme
     };
 
     final json = await invokeMapMethod<String, dynamic>(
@@ -119,7 +121,8 @@ class WebAuth {
       'clientId': clientId,
       'domain': domain,
       'universalLink': _universalLink,
-      'federated': federated
+      'federated': federated,
+      'scheme': _scheme
     };
 
     final result = await invokeMethod<bool>(
