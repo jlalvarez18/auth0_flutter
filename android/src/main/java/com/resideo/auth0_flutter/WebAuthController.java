@@ -1,17 +1,8 @@
 package com.resideo.auth0_flutter;
 
 import android.app.Dialog;
-import android.os.Handler;
-import android.os.HandlerThread;
-import android.os.Looper;
 
-import androidx.annotation.MainThread;
 import androidx.annotation.NonNull;
-import androidx.annotation.UiThread;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.concurrent.Executor;
 
 import com.auth0.android.Auth0;
 import com.auth0.android.Auth0Exception;
@@ -21,6 +12,9 @@ import com.auth0.android.provider.ResponseType;
 import com.auth0.android.provider.VoidCallback;
 import com.auth0.android.provider.WebAuthProvider;
 import com.auth0.android.result.Credentials;
+
+import java.util.HashMap;
+import java.util.List;
 
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;

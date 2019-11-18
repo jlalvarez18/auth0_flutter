@@ -4,8 +4,14 @@ import com.auth0.android.authentication.AuthenticationException;
 import com.auth0.android.authentication.storage.CredentialsManagerException;
 import com.auth0.android.management.ManagementException;
 import com.auth0.android.result.Credentials;
+import com.auth0.android.result.UserIdentity;
+import com.auth0.android.result.UserProfile;
 
+import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.function.Consumer;
 
 class JSONHelpers {
     static HashMap<String, Object> credentialsToJSON(Credentials credentials) {
@@ -16,6 +22,48 @@ class JSONHelpers {
         obj.put("refresh_token", credentials.getRefreshToken());
         obj.put("id_token", credentials.getIdToken());
         obj.put("scope", credentials.getScope());
+
+        return obj;
+    }
+
+    static HashMap<String, Object> profileTOJSON(UserProfile profile) {
+        HashMap<String, Object> obj = new HashMap<>();
+        obj.put("id", profile.getId());
+        obj.put("name", profile.getName());
+        obj.put("nickname", profile.getNickname());
+        obj.put("pictureURL", profile.getPictureURL());
+
+        long milli = profile.getCreatedAt().getTime();
+        long secs = milli / 1000;
+        obj.put("createdAt", secs);
+
+        obj.put("email", profile.getEmail());
+        obj.put("emailVerified", profile.isEmailVerified());
+        obj.put("givenName", profile.getGivenName());
+        obj.put("familyName", profile.getFamilyName());
+        obj.put("additionalAttributes", profile.getExtraInfo());
+
+        final List<UserIdentity> identities = profile.getIdentities();
+        final List<HashMap<String, Object>> identitiesJSON = new ArrayList<>();
+
+        for (UserIdentity identity: identities) {
+            identitiesJSON.add(identityToJSON(identity));
+        }
+
+        obj.put("identities", identitiesJSON);
+
+        return obj;
+    }
+
+    static HashMap<String, Object> identityToJSON(UserIdentity identity) {
+        HashMap<String, Object> obj = new HashMap<>();
+        obj.put("identifier", identity.getId());
+        obj.put("provider", identity.getProvider());
+        obj.put("connection", identity.getConnection());
+        obj.put("social", identity.isSocial());
+        obj.put("profileData", identity.getProfileInfo());
+        obj.put("accessToken", identity.getAccessToken());
+        obj.put("accessTokenSecret", identity.getAccessTokenSecret());
 
         return obj;
     }
