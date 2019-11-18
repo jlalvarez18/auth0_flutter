@@ -98,28 +98,38 @@ public class AuthenticationController implements MethodCallHandler {
                         });
                     }
                 });
+                break;
             }
-            case AuthMethodName.loginWithOTP: {
-                result.notImplemented();
-            }
-            case AuthMethodName.loginDefaultDirectory: {
-                result.notImplemented();
-            }
-            case AuthMethodName.createUser: {
-                result.notImplemented();
-            }
-            case AuthMethodName.resetPassword: {
-                result.notImplemented();
-            }
-            case AuthMethodName.startEmailPasswordless: {
-                result.notImplemented();
-            }
-            case AuthMethodName.startPhoneNumberPasswordless: {
-                result.notImplemented();
-            }
-            case AuthMethodName.userInfoWithToken: {
-                result.notImplemented();
-            }
+//
+//            case AuthMethodName.loginWithOTP: {
+//                result.notImplemented();
+//                break;
+//            }
+//            case AuthMethodName.loginDefaultDirectory: {
+//                result.notImplemented();
+//                break;
+//            }
+//            case AuthMethodName.createUser: {
+//                result.notImplemented();
+//                break;
+//            }
+//            case AuthMethodName.resetPassword: {
+//                result.notImplemented();
+//                break;
+//            }
+//            case AuthMethodName.startEmailPasswordless: {
+//                result.notImplemented();
+//                break;
+//            }
+//            case AuthMethodName.startPhoneNumberPasswordless: {
+//                result.notImplemented();
+//                break;
+//            }
+//            case AuthMethodName.userInfoWithToken: {
+//                result.notImplemented();
+//                break;
+//            }
+
             case AuthMethodName.userInfoWithAccessToken: {
                 final String accessToken = call.argument("accessToken");
                 assert accessToken != null;
@@ -151,20 +161,26 @@ public class AuthenticationController implements MethodCallHandler {
                         });
                     }
                 });
+                break;
             }
 
-            case AuthMethodName.loginSocial: {
-                result.notImplemented();
-            }
-            case AuthMethodName.tokenExchangeWithParameters: {
-                result.notImplemented();
-            }
-            case AuthMethodName.tokenExchangeWithCode: {
-                result.notImplemented();
-            }
-            case AuthMethodName.appleTokenExchange: {
-                result.notImplemented();
-            }
+//            case AuthMethodName.loginSocial: {
+//                result.notImplemented();
+//                break;
+//            }
+//            case AuthMethodName.tokenExchangeWithParameters: {
+//                result.notImplemented();
+//                break;
+//            }
+//            case AuthMethodName.tokenExchangeWithCode: {
+//                result.notImplemented();
+//                break;
+//            }
+//            case AuthMethodName.appleTokenExchange: {
+//                result.notImplemented();
+//                break;
+//            }
+
             case AuthMethodName.renew: {
                 final String refreshToken = call.argument("refreshToken");
                 assert refreshToken != null;
@@ -195,7 +211,9 @@ public class AuthenticationController implements MethodCallHandler {
                         });
                     }
                 });
+                break;
             }
+
             case AuthMethodName.revoke: {
                 final String refreshToken = call.argument("refreshToken");
 
@@ -224,10 +242,15 @@ public class AuthenticationController implements MethodCallHandler {
                         });
                     }
                 });
+                break;
             }
-            case AuthMethodName.delegation: {
+//            case AuthMethodName.delegation: {
+//                result.notImplemented();
+//                break;
+//            }
+            default:
                 result.notImplemented();
-            }
+                break;
         }
     }
 }

@@ -9,6 +9,7 @@ import com.auth0.android.management.UsersAPIClient;
 import com.auth0.android.result.UserIdentity;
 import com.auth0.android.result.UserProfile;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -51,7 +52,14 @@ public class UsersController implements MethodCallHandler {
                 apiClient.getProfile(identifier).start(new BaseCallback<UserProfile, ManagementException>() {
                     @Override
                     public void onSuccess(UserProfile payload) {
+                        final HashMap<String, Object> obj = JSONHelpers.profileTOJSON(payload);
 
+                        registrar.activity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                result.success(obj);
+                            }
+                        });
                     }
 
                     @Override
@@ -72,7 +80,14 @@ public class UsersController implements MethodCallHandler {
                 apiClient.link(primaryUserId, otherUserToken).start(new BaseCallback<List<UserIdentity>, ManagementException>() {
                     @Override
                     public void onSuccess(List<UserIdentity> payload) {
+                        final ArrayList<HashMap<String, Object>> obj = JSONHelpers.identitiesToJSON(payload);
 
+                        registrar.activity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                result.success(obj);
+                            }
+                        });
                     }
 
                     @Override
@@ -95,7 +110,14 @@ public class UsersController implements MethodCallHandler {
                 apiClient.unlink(identityId, fromUserId, provider).start(new BaseCallback<List<UserIdentity>, ManagementException>() {
                     @Override
                     public void onSuccess(List<UserIdentity> payload) {
+                        final ArrayList<HashMap<String, Object>> obj = JSONHelpers.identitiesToJSON(payload);
 
+                        registrar.activity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                result.success(obj);
+                            }
+                        });
                     }
 
                     @Override
@@ -118,7 +140,6 @@ public class UsersController implements MethodCallHandler {
             default:
                 result.notImplemented();
         }
-        result.notImplemented();
     }
 }
 
