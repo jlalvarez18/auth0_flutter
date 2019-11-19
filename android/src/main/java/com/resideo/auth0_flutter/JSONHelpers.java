@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 class JSONHelpers {
     static HashMap<String, Object> credentialsToJSON(Credentials credentials) {
@@ -28,8 +29,12 @@ class JSONHelpers {
     static HashMap<String, Object> profileTOJSON(UserProfile profile) {
         HashMap<String, Object> obj = new HashMap<>();
         obj.put("id", profile.getId());
+        obj.put("sub", profile.getId());
         obj.put("name", profile.getName());
+        obj.put("givenName", profile.getGivenName());
+        obj.put("familyName", profile.getFamilyName());
         obj.put("nickname", profile.getNickname());
+
         obj.put("pictureURL", profile.getPictureURL());
 
         Date createdAt = profile.getCreatedAt();
@@ -42,9 +47,14 @@ class JSONHelpers {
 
         obj.put("email", profile.getEmail());
         obj.put("emailVerified", profile.isEmailVerified());
-        obj.put("givenName", profile.getGivenName());
-        obj.put("familyName", profile.getFamilyName());
-        obj.put("additionalAttributes", profile.getExtraInfo());
+
+        final Map<String, Object> extraInfo = profile.getExtraInfo();
+        extraInfo.put("user_metadata", profile.getUserMetadata());
+        extraInfo.put("app_metadata", profile.getAppMetadata());
+
+        obj.put("additionalAttributes", extraInfo);
+        obj.put("user_metadata", profile.getUserMetadata());
+        obj.put("app_metadata", profile.getAppMetadata());
 
         final List<UserIdentity> identities = profile.getIdentities();
         obj.put("identities", identitiesToJSON(identities));

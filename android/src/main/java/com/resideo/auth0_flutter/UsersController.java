@@ -4,8 +4,10 @@ import androidx.annotation.NonNull;
 
 import com.auth0.android.Auth0;
 import com.auth0.android.callback.BaseCallback;
+import com.auth0.android.callback.ManagementCallback;
 import com.auth0.android.management.ManagementException;
 import com.auth0.android.management.UsersAPIClient;
+import com.auth0.android.request.Request;
 import com.auth0.android.result.UserIdentity;
 import com.auth0.android.result.UserProfile;
 
@@ -49,7 +51,9 @@ public class UsersController implements MethodCallHandler {
                 final String identifier = call.argument("identifier");
                 assert identifier != null;
 
-                apiClient.getProfile(identifier).start(new BaseCallback<UserProfile, ManagementException>() {
+                Request<UserProfile, ManagementException> request = apiClient.getProfile(identifier);
+
+                request.start(new BaseCallback<UserProfile, ManagementException>() {
                     @Override
                     public void onSuccess(UserProfile payload) {
                         final HashMap<String, Object> obj = JSONHelpers.profileTOJSON(payload);
@@ -63,9 +67,14 @@ public class UsersController implements MethodCallHandler {
                     }
 
                     @Override
-                    public void onFailure(ManagementException error) {
-                        final HashMap<String, String> info = JSONHelpers.managementExceptionToJSON(error);
-                        result.error("", error.getLocalizedMessage(), info);
+                    public void onFailure(final ManagementException error) {
+                        registrar.activity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                final HashMap<String, String> info = JSONHelpers.managementExceptionToJSON(error);
+                                result.error("", error.getLocalizedMessage(), info);
+                            }
+                        });
                     }
                 });
                 break;
@@ -91,9 +100,15 @@ public class UsersController implements MethodCallHandler {
                     }
 
                     @Override
-                    public void onFailure(ManagementException error) {
-                        final HashMap<String, String> info = JSONHelpers.managementExceptionToJSON(error);
-                        result.error("", error.getLocalizedMessage(), info);
+                    public void onFailure(final ManagementException error) {
+                        registrar.activity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                final HashMap<String, String> info = JSONHelpers.managementExceptionToJSON(error);
+                                result.error("", error.getLocalizedMessage(), info);
+                            }
+                        });
+
                     }
                 });
                 break;
@@ -121,22 +136,85 @@ public class UsersController implements MethodCallHandler {
                     }
 
                     @Override
-                    public void onFailure(ManagementException error) {
-                        final HashMap<String, String> info = JSONHelpers.managementExceptionToJSON(error);
-                        result.error("", error.getLocalizedMessage(), info);
+                    public void onFailure(final ManagementException error) {
+                        registrar.activity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                final HashMap<String, String> info = JSONHelpers.managementExceptionToJSON(error);
+                                result.error("", error.getLocalizedMessage(), info);
+                            }
+                        });
                     }
                 });
                 break;
             }
-//            case UsersControllerMethodName.linkWithUserId: {
-//                break;
-//            }
+            case UsersControllerMethodName.linkWithUserId: {
+                final String primaryUserId = call.argument("identifier");
+                final String userId = call.argument("userId");
+
+                apiClient.link(primaryUserId, userId).start(new ManagementCallback<List<UserIdentity>>() {
+                    @Override
+                    public void onSuccess(final List<UserIdentity> payload) {
+                        final ArrayList<HashMap<String, Object>> obj = JSONHelpers.identitiesToJSON(payload);
+
+                        registrar.activity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                result.success(obj);
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onFailure(final ManagementException error) {
+                        registrar.activity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                final HashMap<String, String> info = JSONHelpers.managementExceptionToJSON(error);
+                                result.error("", error.getLocalizedMessage(), info);
+                            }
+                        });
+                    }
+                });
+                break;
+            }
 //            case UsersControllerMethodName.patchAttributes: {
+//                final String primaryUserId = call.argument("identifier");
+//
 //                break;
 //            }
-//            case UsersControllerMethodName.patchUserMetadata: {
-//                break;
-//            }
+            case UsersControllerMethodName.patchUserMetadata: {
+                final String primaryUserId = call.argument("identifier");
+                final HashMap<String, Object> metadata = call.argument("userMetadata");
+
+                Request<UserProfile, ManagementException> request = apiClient.updateMetadata(primaryUserId, metadata);
+
+                request.start(new ManagementCallback<UserProfile>() {
+                    @Override
+                    public void onSuccess(UserProfile payload) {
+                        final HashMap<String, Object> obj = JSONHelpers.profileTOJSON(payload);
+
+                        registrar.activity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                result.success(obj);
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onFailure(final ManagementException error) {
+                        registrar.activity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                final HashMap<String, String> info = JSONHelpers.managementExceptionToJSON(error);
+                                result.error("", error.getLocalizedMessage(), info);
+                            }
+                        });
+                    }
+                });
+                break;
+            }
             default:
                 result.notImplemented();
         }
