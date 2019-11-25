@@ -119,25 +119,30 @@ public class CredentialsController implements MethodCallHandler {
                 break;
             }
             case CredentialsMethodName.getCredentials: {
-                manager.getCredentials(new BaseCallback<Credentials, CredentialsManagerException>() {
+                registrar.activity().runOnUiThread(new Runnable() {
                     @Override
-                    public void onSuccess(final Credentials payload) {
-                        registrar.activity().runOnUiThread(new Runnable() {
+                    public void run() {
+                        manager.getCredentials(new BaseCallback<Credentials, CredentialsManagerException>() {
                             @Override
-                            public void run() {
-                                final HashMap<String, Object> obj = JSONHelpers.credentialsToJSON(payload);
-                                result.success(obj);
+                            public void onSuccess(final Credentials payload) {
+                                registrar.activity().runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        final HashMap<String, Object> obj = JSONHelpers.credentialsToJSON(payload);
+                                        result.success(obj);
+                                    }
+                                });
                             }
-                        });
-                    }
 
-                    @Override
-                    public void onFailure(final CredentialsManagerException error) {
-                        registrar.activity().runOnUiThread(new Runnable() {
                             @Override
-                            public void run() {
-                                final Map<String, String> info = JSONHelpers.credentialsErrorToJSON(error);
-                                result.error("", error.getLocalizedMessage(), info);
+                            public void onFailure(final CredentialsManagerException error) {
+                                registrar.activity().runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        final Map<String, String> info = JSONHelpers.credentialsErrorToJSON(error);
+                                        result.error("", error.getLocalizedMessage(), info);
+                                    }
+                                });
                             }
                         });
                     }
