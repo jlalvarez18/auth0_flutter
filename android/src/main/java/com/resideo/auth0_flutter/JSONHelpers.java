@@ -117,6 +117,12 @@ class JSONHelpers {
         obj.put("description", exception.getDescription());
         obj.put("info", info);
 
+        if (exception.isAuthenticationCanceled()) {
+            obj.put("type", "userCancelled");
+        } else {
+            obj.put("type", "unknownError");
+        }
+
         return obj;
     }
 
