@@ -24,9 +24,11 @@ Future<Map<K, V>> invokeMapMethod<K, V>(
     @required dynamic arguments,
     @required ExceptionHandler exceptionHandler}) async {
   try {
-    final result = await channel.invokeMapMethod<K, V>(method, arguments);
+    final result = await channel.invokeMapMethod(method, arguments);
 
-    return result;
+    final Map<K, V> map = Map.castFrom(result);
+
+    return map;
   } on PlatformException catch (e) {
     final error = exceptionHandler(e);
 
@@ -40,8 +42,11 @@ Future<List<T>> invokeListMethod<T>(
     @required dynamic arguments,
     @required ExceptionHandler exceptionHandler}) async {
   try {
-    final result = await channel.invokeListMethod<T>(method, arguments);
-    return result;
+    final result = await channel.invokeListMethod(method, arguments);
+
+    final List<T> list = List.castFrom(result);
+
+    return list;
   } on PlatformException catch (e) {
     final error = exceptionHandler(e);
 
