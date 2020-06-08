@@ -9,10 +9,10 @@ PODS:
 
 DEPENDENCIES:
   - auth0_flutter (from `.symlinks/plugins/auth0_flutter/ios`)
-  - Flutter (from `.symlinks/flutter/ios`)
+  - Flutter (from `.symlinks/flutter/ios-release`)
 
 SPEC REPOS:
-  https://github.com/cocoapods/specs.git:
+  https://github.com/CocoaPods/Specs.git:
     - Auth0
     - SimpleKeychain
 
@@ -20,7 +20,7 @@ EXTERNAL SOURCES:
   auth0_flutter:
     :path: ".symlinks/plugins/auth0_flutter/ios"
   Flutter:
-    :path: ".symlinks/flutter/ios"
+    :path: ".symlinks/flutter/ios-release"
 
 SPEC CHECKSUMS:
   Auth0: 0874a17d1ed7aefa54de2003244be65cad347fcb
@@ -30,4 +30,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: d6dc542d74fe43280e46745d843ee5c531f97f19
 
-COCOAPODS: 1.7.5
+COCOAPODS: 1.9.1
