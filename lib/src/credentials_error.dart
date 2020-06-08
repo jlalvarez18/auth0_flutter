@@ -28,7 +28,7 @@ class CredentialsManagerError implements Exception {
   }
 
   factory CredentialsManagerError.from(PlatformException e) {
-    final details = Map<String, dynamic>.from(e.details);
+    final details = Map.castFrom(e.details) as Map<String, dynamic>;
 
     final typeString = details['error_type'] as String;
 

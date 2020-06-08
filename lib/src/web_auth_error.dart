@@ -24,7 +24,7 @@ class WebAuthError implements Exception {
   }
 
   factory WebAuthError.from(PlatformException e) {
-    final details = Map<String, dynamic>.from(e.details);
+    final details = Map.castFrom(e.details) as Map<String, dynamic>;
 
     return WebAuthError(
         type: _webAuthTypeFrom(details["type"]),
