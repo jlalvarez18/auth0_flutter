@@ -12,7 +12,7 @@ class UsersError implements Exception {
   }
 
   factory UsersError.from(PlatformException e) {
-    final details = Map.castFrom(e.details) as Map<String, dynamic>;
+    final Map<String, dynamic> details = Map.castFrom(e.details);
 
     return UsersError._(
         code: details['code'], description: details['description']);
