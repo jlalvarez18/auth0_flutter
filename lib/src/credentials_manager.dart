@@ -79,11 +79,24 @@ class CredentialsManager {
     args['scope'] = scope;
 
     final result = await invokeMapMethod<String, dynamic>(
-        channel: _channel,
-        method: CredentialsManagerMethod.getCredentials,
-        arguments: args,
-        exceptionHandler: _errorHandler);
+      channel: _channel,
+      method: CredentialsManagerMethod.getCredentials,
+      arguments: args,
+      exceptionHandler: (exception) {
+        final e = _errorHandler(exception);
 
-    return Credentials.fromJSON(result);
+        if (e.type == CredentialErrorType.noCredentials) {
+          return null;
+        }
+
+        return e;
+      },
+    );
+
+    if (result != null) {
+      return Credentials.fromJSON(result);
+    }
+
+    return null;
   }
 }

@@ -14,7 +14,11 @@ Future<T> invokeMethod<T>(
   } on PlatformException catch (e) {
     final error = exceptionHandler(e);
 
-    throw error;
+    if (error != null) {
+      throw error;
+    }
+
+    return null;
   }
 }
 
@@ -32,7 +36,11 @@ Future<Map<K, V>> invokeMapMethod<K, V>(
   } on PlatformException catch (e) {
     final error = exceptionHandler(e);
 
-    throw error;
+    if (error != null) {
+      throw error;
+    }
+
+    return null;
   }
 }
 
@@ -50,6 +58,10 @@ Future<List<T>> invokeListMethod<T>(
   } on PlatformException catch (e) {
     final error = exceptionHandler(e);
 
-    throw error;
+    if (error != null) {
+      throw error;
+    }
+
+    return null;
   }
 }
