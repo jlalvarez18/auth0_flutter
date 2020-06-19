@@ -16,11 +16,13 @@ class AuthenticationError implements Exception {
 
   factory AuthenticationError.from(PlatformException e) {
     final Map<String, dynamic> details = Map.castFrom(e.details);
+    final Map<String, dynamic> info = Map.castFrom(details['info']);
 
     return AuthenticationError._(
-        code: details['code'],
-        statusCode: details['statusCode'],
-        description: details['description'],
-        info: details['info']);
+      code: details['code'],
+      statusCode: details['statusCode'],
+      description: details['description'],
+      info: info,
+    );
   }
 }
