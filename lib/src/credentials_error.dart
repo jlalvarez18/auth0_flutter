@@ -5,6 +5,7 @@ enum CredentialErrorType {
   noRefreshToken,
   failedRefresh,
   touchFailed,
+  revokeFailed,
   unknown
 }
 
@@ -13,6 +14,7 @@ final _hash = <String, CredentialErrorType>{
   'no_refresh_token': CredentialErrorType.noRefreshToken,
   'failed_refresh': CredentialErrorType.failedRefresh,
   'touch_failed': CredentialErrorType.touchFailed,
+  'revoke_failed': CredentialErrorType.revokeFailed,
   'unknown': CredentialErrorType.unknown
 };
 

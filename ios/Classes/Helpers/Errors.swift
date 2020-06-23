@@ -83,6 +83,8 @@ extension CredentialsManagerError: CustomNSError {
             return "Refresh failed with error: \(error.localizedDescription)"
         case .touchFailed(let error):
             return "Touch failed with error: \(error.localizedDescription)"
+        case .revokeFailed(let error):
+            return "Revoke failed with error: \(error.localizedDescription)"
         }
     }
     
@@ -98,6 +100,8 @@ extension CredentialsManagerError: CustomNSError {
             type = "failed_refresh"
         case .touchFailed(_):
             type = "touch_failed"
+        case .revokeFailed(_):
+            type = "revoke_failed"
         }
         
         return [

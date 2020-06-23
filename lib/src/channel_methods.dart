@@ -36,6 +36,7 @@ class CredentialsManagerMethod {
   static const enableBioMetrics = 'enableBioMetrics';
   static const storeCredentials = 'storeCredentials';
   static const clearCredentials = 'clearCredentials';
+  static const revokeCredentials = 'revokeCredentials';
   static const hasValidCredentials = 'hasValidCredentials';
   static const getCredentials = 'getCredentials';
 

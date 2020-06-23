@@ -15,6 +15,7 @@ class CredentialsManagerController: NSObject, FlutterPlugin {
         case clearCredentials
         case hasValidCredentials
         case getCredentials
+        case revokeCredentials
     }
     
     private var credsManager: CredentialsManager?
@@ -93,6 +94,15 @@ class CredentialsManagerController: NSObject, FlutterPlugin {
                         sendResult(result, data: nil, error: error)
                     } else {
                         sendResult(result, data: nil, error: Auth0PluginError.unknownError)
+                    }
+                }
+                
+            case .revokeCredentials:
+                manager.revoke { (error) in
+                    if let error = error {
+                        sendResult(result, data: false, error: error)
+                    } else {
+                        sendResult(result, data: true, error: nil)
                     }
                 }
             }

@@ -62,6 +62,16 @@ class CredentialsManager {
     return result;
   }
 
+  Future<bool> revokeCredentials() async {
+    final result = await invokeMethod<bool>(
+        channel: _channel,
+        method: CredentialsManagerMethod.revokeCredentials,
+        arguments: null,
+        exceptionHandler: _errorHandler);
+
+    return result;
+  }
+
   Future<bool> hasValidCredentials() async {
     final args = Map.fromEntries(_parameters.entries);
 
