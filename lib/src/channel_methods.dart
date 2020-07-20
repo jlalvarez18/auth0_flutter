@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 class Auth0Method {
   static const getPlatformVersion = 'getPlatformVersion';
 
@@ -11,25 +13,31 @@ class WebAuthMethod {
   WebAuthMethod._();
 }
 
-class AuthenticationMethod {
-  static const login = 'login';
-  static const loginWithOTP = 'loginWithOtp';
-  static const loginDefaultDirectory = 'loginDefaultDirectory';
-  static const createUser = 'createUser';
-  static const resetPassword = 'resetPassword';
-  static const startEmailPasswordless = 'startEmailPasswordless';
-  static const startPhoneNumberPasswordless = 'startPhoneNumberPasswordless';
-  static const userInfoWithToken = 'userInfoWithToken';
-  static const userInfoWithAccessToken = 'userInfoWithAccessToken';
-  static const loginSocial = 'loginSocial';
-  static const tokenExchangeWithParameters = 'tokenExchangeWithParams';
-  static const tokenExchangeWithCode = 'tokenExchangeWithCode';
-  static const appleTokenExchange = 'appleTokenExchange';
-  static const renew = 'renew';
-  static const revoke = 'revoke';
-  static const delegation = 'delegation';
+enum AuthenticationMethod {
+  login,
+  loginWithOTP,
+  loginDefaultDirectory,
+  createUser,
+  resetPassword,
+  startEmailPasswordless,
+  startPhoneNumberPasswordless,
+  loginEmailPasswordless,
+  loginPhoneNumberPasswordless,
+  userInfoWithToken,
+  userInfoWithAccessToken,
+  loginSocial,
+  tokenExchangeWithParameters,
+  tokenExchangeWithCode,
+  appleTokenExchange,
+  renew,
+  revoke,
+  delegation,
+}
 
-  AuthenticationMethod._();
+extension AuthenticationMethodExt on AuthenticationMethod {
+  String get stringValue {
+    return describeEnum(this);
+  }
 }
 
 class CredentialsManagerMethod {

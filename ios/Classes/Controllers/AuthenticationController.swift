@@ -17,6 +17,8 @@ class AuthenticationController: NSObject, FlutterPlugin {
         case resetPassword
         case startEmailPasswordless
         case startPhoneNumberPasswordless
+        case loginEmailPasswordless
+        case loginPhoneNumberPasswordless
         case userInfoWithToken
         case userInfoWithAccessToken
         case loginSocial
@@ -140,6 +142,28 @@ class AuthenticationController: NSObject, FlutterPlugin {
                     switch authResult {
                     case .success(_):
                         sendResult(result, data: nil, error: nil)
+                    case .failure(let error):
+                        sendResult(result, data: nil, error: CustomAuthenticationError(error as! AuthenticationError))
+                    }
+                }
+                
+            case .loginEmailPasswordless:
+                let params = try LoginEmailPasswordlessParameters.decode(data: data)
+                auth.login(email: params.email, code: params.code, audience: params.audience, scope: params.scope, parameters: params.parametersDict()).start { (authResult) in
+                    switch authResult {
+                    case .success(let credentials):
+                        sendResult(result, data: credentials.toJSON(), error: nil)
+                    case .failure(let error):
+                        sendResult(result, data: nil, error: CustomAuthenticationError(error as! AuthenticationError))
+                    }
+                }
+                
+            case .loginPhoneNumberPasswordless:
+                let params = try LoginPhoneNumberPasswordlessParameters.decode(data: data)
+                auth.login(phoneNumber: params.phoneNumber, code: params.code, audience: params.audience, scope: params.scope, parameters: params.parametersDict()).start { (authResult) in
+                    switch authResult {
+                    case .success(let credentials):
+                        sendResult(result, data: credentials.toJSON(), error: nil)
                     case .failure(let error):
                         sendResult(result, data: nil, error: CustomAuthenticationError(error as! AuthenticationError))
                     }
@@ -324,6 +348,30 @@ private struct StartPhoneNumberPasswordlessParameters: Decodable {
     let phoneNumber: String
     let type: PasswordlessType
     let connection: String
+}
+
+private struct LoginPhoneNumberPasswordlessParameters: Decodable {
+    let phoneNumber: String
+    let code: String
+    let audience: String?
+    let scope: String?
+    private let parameters: [String: AnyDecodable]
+    
+    func parametersDict() -> [String: Any] {
+        return parameters.mapValues { $0.value }
+    }
+}
+
+private struct LoginEmailPasswordlessParameters: Decodable {
+    let email: String
+    let code: String
+    let audience: String?
+    let scope: String?
+    private let parameters: [String: AnyDecodable]
+    
+    func parametersDict() -> [String: Any] {
+        return parameters.mapValues { $0.value }
+    }
 }
 
 private struct UserInfoWithTokenParameters: Decodable {

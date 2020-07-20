@@ -4,6 +4,7 @@ import com.auth0.android.authentication.AuthenticationException;
 import com.auth0.android.authentication.storage.CredentialsManagerException;
 import com.auth0.android.management.ManagementException;
 import com.auth0.android.result.Credentials;
+import com.auth0.android.result.DatabaseUser;
 import com.auth0.android.result.UserIdentity;
 import com.auth0.android.result.UserProfile;
 
@@ -14,6 +15,15 @@ import java.util.List;
 import java.util.Map;
 
 class JSONHelpers {
+    static HashMap<String, Object> databaseUserToJSON(DatabaseUser user) {
+        HashMap<String, Object>  obj = new HashMap<>();
+        obj.put("email", user.getEmail());
+        obj.put("username", user.getUsername());
+        obj.put("verified", user.isEmailVerified());
+
+        return obj;
+    }
+
     static HashMap<String, Object> credentialsToJSON(Credentials credentials) {
         HashMap<String, Object>  obj = new HashMap<>();
         obj.put("access_token", credentials.getAccessToken());

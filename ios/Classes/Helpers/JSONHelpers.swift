@@ -35,7 +35,7 @@ func databaseUserToJSON(_ user: DatabaseUser) -> [String: Any] {
     let json: [String: Any?] = [
         "email": user.email,
         "username": user.username,
-        "verified": user.verified
+        "email_verified": user.verified
     ]
     
     let result = json.compactMapValues { $0 }
