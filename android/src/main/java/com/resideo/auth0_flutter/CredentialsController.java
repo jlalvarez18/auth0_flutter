@@ -46,6 +46,8 @@ public class CredentialsController implements MethodCallHandler {
             assert domain != null;
 
             final Auth0 auth0 = new Auth0(clientId, domain);
+            auth0.setOIDCConformant(true);
+
             final AuthenticationAPIClient apiClient = new AuthenticationAPIClient(auth0);
             final SharedPreferencesStorage storage = new SharedPreferencesStorage(registrar.activeContext());
 

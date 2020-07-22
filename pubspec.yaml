@@ -1,6 +1,6 @@
 name: auth0_flutter
 description: A new flutter plugin project.
-version: 1.18.2
+version: 1.18.2+1
 
 environment:
   sdk: ">=2.6.0 <3.0.0"
