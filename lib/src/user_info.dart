@@ -25,62 +25,63 @@ class UserInfo {
   ];
 
   final String sub;
-  final String name;
-  final String givenName;
-  final String familyName;
-  final String middleName;
-  final String nickname;
-  final String preferredUsername;
+  final String? name;
+  final String? givenName;
+  final String? familyName;
+  final String? middleName;
+  final String? nickname;
+  final String? preferredUsername;
 
-  final Uri profile;
-  final Uri picture;
-  final Uri website;
+  final Uri? profile;
+  final Uri? picture;
+  final Uri? website;
 
-  final String email;
-  final bool emailVerified;
+  final String? email;
+  final bool? emailVerified;
 
-  final String gender;
-  final String birthdate;
+  final String? gender;
+  final String? birthdate;
 
-  final String zoneinfoIdentifier;
-  final String localeIdentifier;
+  final String? zoneinfoIdentifier;
+  final String? localeIdentifier;
 
-  final String phoneNumber;
-  final bool phoneNumberVerified;
+  final String? phoneNumber;
+  final bool? phoneNumberVerified;
 
-  final Map<String, String> address;
-  final DateTime updatedAt;
+  final Map<String, String>? address;
+  final DateTime? updatedAt;
 
-  final Map<String, dynamic> customClaims;
+  final Map<String, dynamic>? customClaims;
 
-  UserInfo(
-      {this.sub,
-      this.name,
-      this.givenName,
-      this.familyName,
-      this.middleName,
-      this.nickname,
-      this.preferredUsername,
-      this.profile,
-      this.picture,
-      this.website,
-      this.email,
-      this.emailVerified,
-      this.gender,
-      this.birthdate,
-      this.zoneinfoIdentifier,
-      this.localeIdentifier,
-      this.phoneNumber,
-      this.phoneNumberVerified,
-      this.address,
-      this.updatedAt,
-      this.customClaims});
+  UserInfo({
+    required this.sub,
+    this.name,
+    this.givenName,
+    this.familyName,
+    this.middleName,
+    this.nickname,
+    this.preferredUsername,
+    this.profile,
+    this.picture,
+    this.website,
+    this.email,
+    this.emailVerified,
+    this.gender,
+    this.birthdate,
+    this.zoneinfoIdentifier,
+    this.localeIdentifier,
+    this.phoneNumber,
+    this.phoneNumberVerified,
+    this.address,
+    this.updatedAt,
+    this.customClaims,
+  });
 
   factory UserInfo.fromJSON(Map<String, dynamic> json) {
     final sub = json['sub'];
 
     if (sub == null) {
-      return null;
+      throw ArgumentError.notNull('sub');
     }
 
     final name = json['name'];

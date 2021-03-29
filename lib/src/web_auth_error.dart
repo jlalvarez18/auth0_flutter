@@ -14,9 +14,9 @@ enum WebAuthErrorType {
 
 class WebAuthError implements Exception {
   final WebAuthErrorType type;
-  final String description;
+  final String? description;
 
-  WebAuthError({this.type, this.description});
+  WebAuthError({required this.type, this.description});
 
   @override
   String toString() {
@@ -26,13 +26,15 @@ class WebAuthError implements Exception {
   factory WebAuthError.from(PlatformException e) {
     final Map<String, dynamic> details = Map.castFrom(e.details);
 
-    return WebAuthError(
-        type: _webAuthTypeFrom(details["type"]),
-        description: details["description"]);
+    return WebAuthError(type: _webAuthTypeFrom(details["type"]), description: details["description"]);
   }
 }
 
-WebAuthErrorType _webAuthTypeFrom(String value) {
+WebAuthErrorType _webAuthTypeFrom(String? value) {
+  if (value == null) {
+    return WebAuthErrorType.unknownError;
+  }
+
   switch (value) {
     case "noBundleIdentifierFound":
       return WebAuthErrorType.noBundleIdentifierFound;

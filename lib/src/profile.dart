@@ -4,54 +4,65 @@ class Profile {
   final String id;
   final String name;
   final String nickname;
-  final Uri pictureURL;
   final DateTime createdAt;
 
-  final String email;
-  final bool emailVerified;
-  final String givenName;
-  final String familyName;
+  final Uri? pictureURL;
+  final String? email;
+  final bool? emailVerified;
+  final String? givenName;
+  final String? familyName;
 
-  final Map<String, dynamic> additionalAttributes;
-  final List<Identity> identities;
+  final Map<String, dynamic>? additionalAttributes;
+  final List<Identity>? identities;
 
-  Map<String, dynamic> get userMetadata {
-    return additionalAttributes['user_metadata'] ?? {};
+  Map<String, dynamic>? get userMetadata {
+    return additionalAttributes?['user_metadata'];
   }
 
-  Map<String, dynamic> get appMetadata {
-    return additionalAttributes['app_metadata'] ?? {};
+  Map<String, dynamic>? get appMetadata {
+    return additionalAttributes?['app_metadata'];
   }
 
-  Profile._(
-      {this.id,
-      this.name,
-      this.nickname,
-      this.pictureURL,
-      this.createdAt,
-      this.email,
-      this.emailVerified,
-      this.givenName,
-      this.familyName,
-      this.additionalAttributes,
-      this.identities});
+  Profile._({
+    required this.id,
+    required this.name,
+    required this.nickname,
+    required this.createdAt,
+    this.pictureURL,
+    this.email,
+    this.emailVerified,
+    this.givenName,
+    this.familyName,
+    this.additionalAttributes,
+    this.identities,
+  });
 
   factory Profile.fromJSON(Map<String, dynamic> json) {
-    final String id = json['id'];
-    final String name = json['name'];
-    final String nickname = json['nickname'];
+    final String? id = json['id'];
+    if (id == null) {
+      throw ArgumentError.notNull('id');
+    }
+
+    final String? name = json['name'];
+    if (name == null) {
+      throw ArgumentError.notNull('name');
+    }
+
+    final String? nickname = json['nickname'];
+    if (nickname == null) {
+      throw ArgumentError.notNull('nickname');
+    }
 
     final pictureUrl = Uri.tryParse(json['pictureURL']);
 
-    final String dateString = json['createdAt'];
-    final createdAt = dateFromString(dateString);
+    final String? dateString = json['createdAt'];
+    if (dateString == null) {
+      throw ArgumentError.notNull('createdAt');
+    }
 
-    if (id == null &&
-        name == null &&
-        nickname == null &&
-        pictureUrl == null &&
-        createdAt == null) {
-      return null;
+    final createdAt = dateFromString(dateString);
+    if (createdAt == null) {
+      throw Exception('Could not parse createdAt string');
     }
 
     final List<Map<String, dynamic>> identityValues = json['identities'];

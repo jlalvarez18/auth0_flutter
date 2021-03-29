@@ -1,9 +1,9 @@
 part of auth0_flutter;
 
 class DatabaseUser {
-  final String email;
-  final String username;
-  final bool verified;
+  final String? email;
+  final String? username;
+  final bool? verified;
 
   DatabaseUser._({this.email, this.username, this.verified});
 

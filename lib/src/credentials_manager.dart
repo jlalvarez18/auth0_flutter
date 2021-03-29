@@ -1,40 +1,25 @@
 part of auth0_flutter;
 
 class CredentialsManager {
-  static const _channel =
-      const MethodChannel('plugins.auth0_flutter.io/credentials_manager');
+  static const _channel = const MethodChannel('plugins.auth0_flutter.io/credentials_manager');
 
   final Map<String, dynamic> _parameters;
 
-  CredentialsManagerError _errorHandler(PlatformException e) =>
-      CredentialsManagerError.from(e);
+  CredentialsManagerError _errorHandler(PlatformException e) => CredentialsManagerError.from(e);
 
-  CredentialsManager(
-      {@required String clientId, @required String domain, String storeKey})
-      : _parameters = {
-          'clientId': clientId,
-          'domain': domain,
-          'storeKey': storeKey
-        };
+  CredentialsManager({required String clientId, required String domain, String? storeKey})
+      : _parameters = {'clientId': clientId, 'domain': domain, 'storeKey': storeKey};
 
-  Future<bool> enableBiometrics(
-      {@required String title,
-      String cancelTitle,
-      String fallbackTitle}) async {
-    assert(title != null);
-
+  Future<bool> enableBiometrics({required String title, String? cancelTitle, String? fallbackTitle}) async {
     final args = Map.fromEntries(_parameters.entries);
     args['title'] = title;
     args['cancelTitle'] = cancelTitle;
     args['fallbackTitle'] = fallbackTitle;
 
     final success = await invokeMethod<bool>(
-        channel: _channel,
-        method: CredentialsManagerMethod.enableBioMetrics,
-        arguments: args,
-        exceptionHandler: _errorHandler);
+        channel: _channel, method: CredentialsManagerMethod.enableBioMetrics, arguments: args, exceptionHandler: _errorHandler);
 
-    return success;
+    return success ?? false;
   }
 
   Future<bool> storeCredentials(Credentials credentials) async {
@@ -42,49 +27,37 @@ class CredentialsManager {
     args['credentials'] = credentials.toJSON();
 
     final result = await invokeMethod<bool>(
-        channel: _channel,
-        method: CredentialsManagerMethod.storeCredentials,
-        arguments: args,
-        exceptionHandler: _errorHandler);
+        channel: _channel, method: CredentialsManagerMethod.storeCredentials, arguments: args, exceptionHandler: _errorHandler);
 
-    return result;
+    return result ?? false;
   }
 
   Future<bool> clearCredentials() async {
     final args = Map.fromEntries(_parameters.entries);
 
     final result = await invokeMethod<bool>(
-        channel: _channel,
-        method: CredentialsManagerMethod.clearCredentials,
-        arguments: args,
-        exceptionHandler: _errorHandler);
+        channel: _channel, method: CredentialsManagerMethod.clearCredentials, arguments: args, exceptionHandler: _errorHandler);
 
-    return result;
+    return result ?? false;
   }
 
   Future<bool> revokeCredentials() async {
     final result = await invokeMethod<bool>(
-        channel: _channel,
-        method: CredentialsManagerMethod.revokeCredentials,
-        arguments: null,
-        exceptionHandler: _errorHandler);
+        channel: _channel, method: CredentialsManagerMethod.revokeCredentials, arguments: null, exceptionHandler: _errorHandler);
 
-    return result;
+    return result ?? false;
   }
 
   Future<bool> hasValidCredentials() async {
     final args = Map.fromEntries(_parameters.entries);
 
     final result = await invokeMethod<bool>(
-        channel: _channel,
-        method: CredentialsManagerMethod.hasValidCredentials,
-        arguments: args,
-        exceptionHandler: _errorHandler);
+        channel: _channel, method: CredentialsManagerMethod.hasValidCredentials, arguments: args, exceptionHandler: _errorHandler);
 
-    return result;
+    return result ?? false;
   }
 
-  Future<Credentials> getCredentials({String scope}) async {
+  Future<Credentials?> getCredentials({String? scope}) async {
     final args = Map.fromEntries(_parameters.entries);
     args['scope'] = scope;
 

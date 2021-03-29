@@ -1,10 +1,10 @@
 part of auth0_flutter;
 
 class AuthenticationError implements Exception {
-  final String code;
-  final int statusCode;
-  final String description;
-  final Map<String, dynamic> info;
+  final String? code;
+  final int? statusCode;
+  final String? description;
+  final Map<String, dynamic>? info;
 
   AuthenticationError._(
       {this.code, this.statusCode, this.description, this.info});

@@ -11,11 +11,11 @@ class UserPatchAttributes {
   }
 
   UserPatchAttributes email(
-      {@required String email,
-      bool verified,
-      bool verify,
-      @required String connection,
-      @required String clientId}) {
+      {required String email,
+      bool? verified,
+      bool? verify,
+      required String connection,
+      required String clientId}) {
     _dictionary['email'] = email;
     _dictionary['verify_email'] = verify;
     _dictionary['email_verified'] = verified;
@@ -26,7 +26,7 @@ class UserPatchAttributes {
   }
 
   UserPatchAttributes emailVerified(
-      {@required bool verified, @required String connection}) {
+      {required bool verified, required String connection}) {
     _dictionary['email_verified'] = verified;
     _dictionary['connection'] = connection;
 
@@ -34,11 +34,11 @@ class UserPatchAttributes {
   }
 
   UserPatchAttributes phoneNumber(
-      {@required String phoneNumber,
-      bool verified,
-      bool verify,
-      @required String connection,
-      @required String clientId}) {
+      {required String phoneNumber,
+      bool? verified,
+      bool? verify,
+      required String connection,
+      required String clientId}) {
     _dictionary["phone_number"] = phoneNumber;
     _dictionary["verify_phone_number"] = verify;
     _dictionary["phone_verified"] = verified;
@@ -49,7 +49,7 @@ class UserPatchAttributes {
   }
 
   UserPatchAttributes phoneVerified(
-      {@required bool verified, @required String connection}) {
+      {required bool verified, required String connection}) {
     _dictionary["phone_verified"] = verified;
     _dictionary["connection"] = connection;
 
@@ -57,7 +57,7 @@ class UserPatchAttributes {
   }
 
   UserPatchAttributes password(
-      {@required String password, bool verify, @required String connection}) {
+      {required String password, bool? verify, required String connection}) {
     _dictionary["password"] = password;
     _dictionary["connection"] = connection;
     _dictionary["verify_password"] = verify;
@@ -66,7 +66,7 @@ class UserPatchAttributes {
   }
 
   UserPatchAttributes username(
-      {@required String username, @required String connection}) {
+      {required String username, required String connection}) {
     _dictionary["username"] = username;
     _dictionary["connection"] = connection;
 

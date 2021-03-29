@@ -4,12 +4,11 @@ part of auth0_flutter;
 enum ResponseType { token, idToken, code }
 
 class WebAuth {
-  static const _channel =
-      const MethodChannel('plugins.auth0_flutter.io/web_auth');
+  static const _channel = const MethodChannel('plugins.auth0_flutter.io/web_auth');
 
   WebAuthError _errorHandler(PlatformException e) => WebAuthError.from(e);
 
-  WebAuth._({@required this.clientId, @required this.domain});
+  WebAuth._({required this.clientId, required this.domain});
 
   final String clientId;
   final String domain;
@@ -18,8 +17,8 @@ class WebAuth {
 
   bool _universalLink = false;
   List<ResponseType> _responseType = [ResponseType.code];
-  String _nonce;
-  String _scheme;
+  String? _nonce;
+  String? _scheme;
 
   /// For redirect url instead of a custom scheme it will use `https` and iOS 9 Universal Links.
   /// Before enabling this flag you'll need to configure Universal Links
@@ -74,7 +73,6 @@ class WebAuth {
 
   /// Setup the response types to be used for authentcation
   WebAuth responseType(List<ResponseType> value) {
-    assert(value != null);
     assert(value.isNotEmpty);
 
     _responseType = value;
@@ -100,18 +98,18 @@ class WebAuth {
       'clientId': clientId,
       'domain': domain,
       'universalLink': _universalLink,
-      'responseType':
-          _responseType.map((v) => _responseTypeToString(v)).toList(),
+      'responseType': _responseType.map((v) => _responseTypeToString(v)).toList(),
       'nonce': _nonce,
       'parameters': _parameters,
       'scheme': _scheme
     };
 
     final json = await invokeMapMethod<String, dynamic>(
-        channel: _channel,
-        method: WebAuthMethod.start,
-        arguments: args,
-        exceptionHandler: _errorHandler);
+        channel: _channel, method: WebAuthMethod.start, arguments: args, exceptionHandler: _errorHandler);
+
+    if (json == null) {
+      throw Exception('Unknown Error');
+    }
 
     return Credentials.fromJSON(json);
   }
@@ -126,12 +124,9 @@ class WebAuth {
     };
 
     final result = await invokeMethod<bool>(
-        channel: _channel,
-        method: WebAuthMethod.clearSession,
-        arguments: arguments,
-        exceptionHandler: _errorHandler);
+        channel: _channel, method: WebAuthMethod.clearSession, arguments: arguments, exceptionHandler: _errorHandler);
 
-    return result;
+    return result ?? false;
   }
 }
 
@@ -144,6 +139,4 @@ String _responseTypeToString(ResponseType type) {
     case ResponseType.code:
       return 'code';
   }
-
-  return '';
 }

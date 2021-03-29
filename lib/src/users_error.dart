@@ -1,8 +1,8 @@
 part of auth0_flutter;
 
 class UsersError implements Exception {
-  final String code;
-  final String description;
+  final String? code;
+  final String? description;
 
   UsersError._({this.code, this.description});
 

@@ -1,13 +1,6 @@
 part of auth0_flutter;
 
-enum CredentialErrorType {
-  noCredentials,
-  noRefreshToken,
-  failedRefresh,
-  touchFailed,
-  revokeFailed,
-  unknown
-}
+enum CredentialErrorType { noCredentials, noRefreshToken, failedRefresh, touchFailed, revokeFailed, unknown }
 
 final _hash = <String, CredentialErrorType>{
   'no_credentials': CredentialErrorType.noCredentials,
@@ -20,9 +13,9 @@ final _hash = <String, CredentialErrorType>{
 
 class CredentialsManagerError implements Exception {
   final CredentialErrorType type;
-  final String description;
+  final String? description;
 
-  CredentialsManagerError._({this.type, this.description});
+  CredentialsManagerError._({required this.type, this.description});
 
   @override
   String toString() {
@@ -32,11 +25,14 @@ class CredentialsManagerError implements Exception {
   factory CredentialsManagerError.from(PlatformException e) {
     final Map<String, dynamic> details = Map.castFrom(e.details);
 
-    final typeString = details['error_type'] as String;
+    final typeString = details['error_type'] as String?;
+    final description = details['error_description'] as String?;
 
-    final type = _hash[typeString];
+    if (typeString == null) {
+      return CredentialsManagerError._(type: CredentialErrorType.unknown);
+    }
 
-    final description = details['error_description'] as String;
+    final type = _hash[typeString] ?? CredentialErrorType.unknown;
 
     return CredentialsManagerError._(type: type, description: description);
   }

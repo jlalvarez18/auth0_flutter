@@ -1,10 +1,6 @@
 part of auth0_flutter;
 
-DateTime dateFromString(String value) {
-  if (value == null) {
-    return null;
-  }
-
+DateTime? dateFromString(String value) {
   final intValue = int.tryParse(value);
   if (intValue != null) {
     final milliseconds = intValue * Duration.millisecondsPerSecond;
@@ -15,7 +11,7 @@ DateTime dateFromString(String value) {
   return DateTime.tryParse(value);
 }
 
-DateTime dateFromDouble(double value) {
+DateTime? dateFromDouble(double? value) {
   if (value == null) {
     return null;
   }

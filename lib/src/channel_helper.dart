@@ -1,12 +1,12 @@
 part of auth0_flutter;
 
-typedef ExceptionHandler = Exception Function(PlatformException exception);
+typedef ExceptionHandler = Exception? Function(PlatformException exception);
 
-Future<T> invokeMethod<T>(
-    {@required MethodChannel channel,
-    @required String method,
-    @required dynamic arguments,
-    @required ExceptionHandler exceptionHandler}) async {
+Future<T?> invokeMethod<T>(
+    {required MethodChannel channel,
+    required String method,
+    required dynamic arguments,
+    required ExceptionHandler exceptionHandler}) async {
   try {
     final result = await channel.invokeMethod<T>(method, arguments);
 
@@ -18,17 +18,21 @@ Future<T> invokeMethod<T>(
       throw error;
     }
 
-    return null;
+    throw Exception('Unknown Error Occured');
   }
 }
 
-Future<Map<K, V>> invokeMapMethod<K, V>(
-    {@required MethodChannel channel,
-    @required String method,
-    @required dynamic arguments,
-    @required ExceptionHandler exceptionHandler}) async {
+Future<Map<K, V>?> invokeMapMethod<K, V>(
+    {required MethodChannel channel,
+    required String method,
+    required dynamic arguments,
+    required ExceptionHandler exceptionHandler}) async {
   try {
     final result = await channel.invokeMapMethod(method, arguments);
+
+    if (result == null) {
+      return null;
+    }
 
     final Map<K, V> map = Map.castFrom(result);
 
@@ -40,17 +44,21 @@ Future<Map<K, V>> invokeMapMethod<K, V>(
       throw error;
     }
 
-    return null;
+    throw Exception('Unknown Error Occured');
   }
 }
 
-Future<List<T>> invokeListMethod<T>(
-    {@required MethodChannel channel,
-    @required String method,
-    @required dynamic arguments,
-    @required ExceptionHandler exceptionHandler}) async {
+Future<List<T>?> invokeListMethod<T>(
+    {required MethodChannel channel,
+    required String method,
+    required dynamic arguments,
+    required ExceptionHandler exceptionHandler}) async {
   try {
     final result = await channel.invokeListMethod(method, arguments);
+
+    if (result == null) {
+      return null;
+    }
 
     final List<T> list = List.castFrom(result);
 
@@ -62,6 +70,6 @@ Future<List<T>> invokeListMethod<T>(
       throw error;
     }
 
-    return null;
+    throw Exception('Unknown Error Occured');
   }
 }
