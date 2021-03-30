@@ -219,7 +219,7 @@ class Authentication {
     String scope = 'openid',
     required Map<String, dynamic> parameters,
   }) async {
-    final args = _generateArguments({'token': token, 'connection': connection, 'scope': scope, 'parameters': parameters ?? {}});
+    final args = _generateArguments({'token': token, 'connection': connection, 'scope': scope, 'parameters': parameters});
 
     final result = await _invokeMapMethod<String, dynamic>(
       AuthenticationMethod.loginSocial,
@@ -309,16 +309,19 @@ class Authentication {
     return args;
   }
 
-  Future<Map<K, V>> _invokeMapMethod<K, V>(
-    AuthenticationMethod method,
-    dynamic arguments,
-  ) {
-    return invokeMapMethod(
+  Future<Map<K, V>> _invokeMapMethod<K, V>(AuthenticationMethod method, dynamic arguments) async {
+    final value = await invokeMapMethod<K, V>(
       channel: _channel,
       method: method.stringValue,
       arguments: arguments,
       exceptionHandler: _errorHandler,
     );
+
+    if (value == null) {
+      throw Exception('Unknown Error');
+    }
+
+    return value;
   }
 
   Future<void> _invokeMethod(
