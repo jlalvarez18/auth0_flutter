@@ -20,6 +20,14 @@ class WebAuth {
   String? _nonce;
   String? _scheme;
 
+  bool _loggingEnabled = false;
+
+  /// Turn on/off Auth0.swift debug logging of HTTP requests and OAuth2 flow (iOS only).
+  WebAuth logging({required bool enabled}) {
+    _loggingEnabled = enabled;
+    return this;
+  }
+
   /// For redirect url instead of a custom scheme it will use `https` and iOS 9 Universal Links.
   /// Before enabling this flag you'll need to configure Universal Links
   WebAuth useUniversalLink() {
@@ -101,7 +109,8 @@ class WebAuth {
       'responseType': _responseType.map((v) => _responseTypeToString(v)).toList(),
       'nonce': _nonce,
       'parameters': _parameters,
-      'scheme': _scheme
+      'scheme': _scheme,
+      'loggingEnabled': _loggingEnabled,
     };
 
     final json = await invokeMapMethod<String, dynamic>(

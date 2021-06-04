@@ -1,9 +1,8 @@
+import 'dart:async';
 import 'dart:core';
 
-import 'package:flutter/material.dart';
-import 'dart:async';
-
 import 'package:auth0_flutter/auth0_flutter.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() => runApp(MyApp());
@@ -48,16 +47,17 @@ class _MyAppState extends State<MyApp> {
     try {
       await _dotEnv.load('assets/.env');
 
-      final clientId = _dotEnv.env['CLIENT_ID'];
-      final domain = _dotEnv.env['DOMAIN'];
-      final audience = _dotEnv.env['AUDIENCE'];
+      //   final clientId = _dotEnv.env['CLIENT_ID'];
+      //   final domain = _dotEnv.env['DOMAIN'];
+      //   final audience = _dotEnv.env['AUDIENCE'];
+
+      final audience = 'https://api.cimpress.io/';
+      final clientId = 'rB6m3d5LcaVi0zV6wqHvA8xuekDyTNKK';
+      final domain = 'cimpress.auth0.com';
 
       _auth0 = Auth0(clientId: clientId, domain: domain);
       _credManager = _auth0.credentialsManager();
-      _webAuth = _auth0
-          .webAuth()
-          .audience(audience)
-          .scope('openid email offline_access');
+      _webAuth = _auth0.webAuth().audience(audience).scope('openid email offline_access');
 
       await _credManager.enableBiometrics(title: "Secure all the things");
 
@@ -106,9 +106,7 @@ class _MyAppState extends State<MyApp> {
                   Text(_credentials.accessToken),
                   FlatButton(
                     color: Colors.blueGrey,
-                    child: Text(_credentialsStored
-                        ? 'Clear Credentials'
-                        : 'Store Credentials'),
+                    child: Text(_credentialsStored ? 'Clear Credentials' : 'Store Credentials'),
                     onPressed: () async {
                       if (_credentialsStored) {
                         await _credManager.clearCredentials();
@@ -118,8 +116,7 @@ class _MyAppState extends State<MyApp> {
                         await _credManager.storeCredentials(_credentials);
                       }
 
-                      _credentialsStored =
-                          await _credManager.hasValidCredentials();
+                      _credentialsStored = await _credManager.hasValidCredentials();
 
                       setState(() {});
                     },

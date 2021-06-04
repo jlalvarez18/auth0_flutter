@@ -82,8 +82,14 @@ private struct WebAuthArguments: Decodable {
     let nonce: String?
     let parameters: [String: String]
     
+    let loggingEnabled: Bool
+    
     func webAuth() -> WebAuth {
         let auth = Auth0.webAuth(clientId: self.clientId, domain: self.domain)
+        
+        if loggingEnabled {
+            _ = auth.logging(enabled: loggingEnabled)
+        }
         
         if universalLink {
             _ = auth.useUniversalLink()

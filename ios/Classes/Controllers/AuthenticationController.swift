@@ -52,6 +52,10 @@ class AuthenticationController: NSObject, FlutterPlugin {
             
             let auth = authentication(clientId: authParams.clientId, domain: authParams.domain)
             
+            if authParams.loggingEnabled {
+                _ = auth.logging(enabled: authParams.loggingEnabled)
+            }
+            
             switch method {
             case .login:
                 let params = try LoginWithUsernameOrEmailParameters.decode(data: data)
@@ -277,6 +281,7 @@ class AuthenticationController: NSObject, FlutterPlugin {
 private struct AuthParameters: Decodable {
     let clientId: String
     let domain: String
+    let loggingEnabled: Bool
 }
 
 private struct LoginWithUsernameOrEmailParameters: Decodable {

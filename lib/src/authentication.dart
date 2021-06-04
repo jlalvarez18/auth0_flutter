@@ -24,7 +24,15 @@ class Authentication {
   final String clientId;
   final String domain;
 
+  bool _loggingEnabled = false;
+
   Authentication._({required this.clientId, required this.domain});
+
+  /// Turn on/off Auth0.swift debug logging of HTTP requests and OAuth2 flow (iOS only).
+  Authentication logging({required bool enabled}) {
+    _loggingEnabled = enabled;
+    return this;
+  }
 
   Future<Credentials> login({
     required String usernameOrEmail,
@@ -300,7 +308,11 @@ class Authentication {
   }
 
   Map<String, dynamic> _generateArguments(Map<String, dynamic>? other) {
-    final args = <String, dynamic>{'clientId': clientId, 'domain': domain};
+    final args = <String, dynamic>{
+      'clientId': clientId,
+      'domain': domain,
+      'loggingEnabled': _loggingEnabled,
+    };
 
     if (other != null) {
       args.addAll(other);
