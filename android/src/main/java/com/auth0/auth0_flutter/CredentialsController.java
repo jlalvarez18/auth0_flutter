@@ -54,7 +54,7 @@ public class CredentialsController implements MethodCallHandler {
 
             final Auth0 auth0 = new Auth0(clientId, domain);
 
-            final Context context = activityBinding.getActivity().getApplicationContext();
+            final Context context = activityBinding.getActivity();
 
             final AuthenticationAPIClient apiClient = new AuthenticationAPIClient(auth0);
             final SharedPreferencesStorage storage = new SharedPreferencesStorage(context);

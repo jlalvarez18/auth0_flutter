@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin.FlutterPluginBinding;
+import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
@@ -29,14 +30,19 @@ public class WebAuthController implements MethodCallHandler {
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private final FlutterPluginBinding binding;
 
+    ActivityPluginBinding activityBinding;
+
     private WebAuthController(FlutterPluginBinding binding) {
         this.binding = binding;
     }
 
-    static void registerWith(FlutterPluginBinding binding) {
+    static WebAuthController registerWith(FlutterPluginBinding binding) {
+        final WebAuthController controller = new WebAuthController(binding);
         final MethodChannel channel = new MethodChannel(binding.getBinaryMessenger(), "plugins.auth0_flutter.io/web_auth");
 
-        channel.setMethodCallHandler(new WebAuthController(binding));
+        channel.setMethodCallHandler(controller);
+
+        return controller;
     }
 
     @Override
@@ -53,7 +59,7 @@ public class WebAuthController implements MethodCallHandler {
             case WebAuthMethodName.start: {
                 final WebAuthProvider.Builder webAuth = webAuth(auth0, methodCall);
 
-                webAuth.start(binding.getApplicationContext(), new Callback<Credentials, AuthenticationException>() {
+                webAuth.start(activityBinding.getActivity(), new Callback<Credentials, AuthenticationException>() {
                     @Override
                     public void onSuccess(Credentials credentials) {
                         final HashMap<String, Object> obj = JSONHelpers.credentialsToJSON(credentials);

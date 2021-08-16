@@ -10,15 +10,14 @@ import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
 public class Auth0FlutterPlugin implements FlutterPlugin, ActivityAware {
 
   CredentialsController credentialsController;
+  WebAuthController webAuthController;
 
   @Override
   public void onAttachedToEngine(@NonNull FlutterPluginBinding binding) {
-    // TODO: your plugin is now attached to a Flutter experience.
-
     AuthenticationController.registerWith(binding);
-    WebAuthController.registerWith(binding);
     UsersController.registerWith(binding);
 
+    webAuthController = WebAuthController.registerWith(binding);
     credentialsController = CredentialsController.registerWith(binding);
   }
 
@@ -30,20 +29,24 @@ public class Auth0FlutterPlugin implements FlutterPlugin, ActivityAware {
   @Override
   public void onAttachedToActivity(@NonNull ActivityPluginBinding binding) {
     credentialsController.activityBinding = binding;
+    webAuthController.activityBinding = binding;
   }
 
   @Override
   public void onDetachedFromActivityForConfigChanges() {
     credentialsController.activityBinding = null;
+    webAuthController.activityBinding = null;
   }
 
   @Override
   public void onReattachedToActivityForConfigChanges(@NonNull ActivityPluginBinding binding) {
     credentialsController.activityBinding = binding;
+    webAuthController.activityBinding = binding;
   }
 
   @Override
   public void onDetachedFromActivity() {
     credentialsController.activityBinding = null;
+    webAuthController.activityBinding = null;
   }
 }

@@ -1,4 +1,4 @@
-group 'com.resideo.auth0_flutter'
+group 'com.auth0.auth0_flutter'
 version '1.0-SNAPSHOT'
 
 buildscript {
