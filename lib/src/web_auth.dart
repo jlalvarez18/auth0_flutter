@@ -4,7 +4,8 @@ part of auth0_flutter;
 enum ResponseType { token, idToken, code }
 
 class WebAuth {
-  static const _channel = const MethodChannel('plugins.auth0_flutter.io/web_auth');
+  static const _channel =
+      const MethodChannel('plugins.auth0_flutter.io/web_auth');
 
   WebAuthError _errorHandler(PlatformException e) => WebAuthError.from(e);
 
@@ -79,7 +80,8 @@ class WebAuth {
     return this;
   }
 
-  /// Setup the response types to be used for authentcation
+  /// Setup the response types to be used for authentication
+  /// No longer used in Android v2 SDK
   WebAuth responseType(List<ResponseType> value) {
     assert(value.isNotEmpty);
 
@@ -106,7 +108,8 @@ class WebAuth {
       'clientId': clientId,
       'domain': domain,
       'universalLink': _universalLink,
-      'responseType': _responseType.map((v) => _responseTypeToString(v)).toList(),
+      'responseType':
+          _responseType.map((v) => _responseTypeToString(v)).toList(),
       'nonce': _nonce,
       'parameters': _parameters,
       'scheme': _scheme,
@@ -114,7 +117,10 @@ class WebAuth {
     };
 
     final json = await invokeMapMethod<String, dynamic>(
-        channel: _channel, method: WebAuthMethod.start, arguments: args, exceptionHandler: _errorHandler);
+        channel: _channel,
+        method: WebAuthMethod.start,
+        arguments: args,
+        exceptionHandler: _errorHandler);
 
     if (json == null) {
       throw Exception('Unknown Error');
@@ -133,7 +139,10 @@ class WebAuth {
     };
 
     final result = await invokeMethod<bool>(
-        channel: _channel, method: WebAuthMethod.clearSession, arguments: arguments, exceptionHandler: _errorHandler);
+        channel: _channel,
+        method: WebAuthMethod.clearSession,
+        arguments: arguments,
+        exceptionHandler: _errorHandler);
 
     return result ?? false;
   }

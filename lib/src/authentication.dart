@@ -17,9 +17,11 @@ String _passwordlessTypeToString(PasswordlessType type) {
 }
 
 class Authentication {
-  static const _channel = const MethodChannel('plugins.auth0_flutter.io/authentication');
+  static const _channel =
+      const MethodChannel('plugins.auth0_flutter.io/authentication');
 
-  AuthenticationError _errorHandler(PlatformException e) => AuthenticationError.from(e);
+  AuthenticationError _errorHandler(PlatformException e) =>
+      AuthenticationError.from(e);
 
   final String clientId;
   final String domain;
@@ -59,7 +61,8 @@ class Authentication {
     return Credentials.fromJSON(result);
   }
 
-  Future<Credentials> loginWithOTP(String otp, {required String mfaToken}) async {
+  Future<Credentials> loginWithOTP(String otp,
+      {required String mfaToken}) async {
     final args = _generateArguments({'otp': otp, 'mfaToken': mfaToken});
 
     final result = await _invokeMapMethod<String, dynamic>(
@@ -77,8 +80,13 @@ class Authentication {
     String? scope,
     Map<String, dynamic>? parameters,
   }) async {
-    final args =
-        _generateArguments({'username': username, 'password': password, 'audience': audience, 'scope': scope, 'parameters': parameters});
+    final args = _generateArguments({
+      'username': username,
+      'password': password,
+      'audience': audience,
+      'scope': scope,
+      'parameters': parameters
+    });
 
     final result = await _invokeMapMethod<String, dynamic>(
       AuthenticationMethod.loginDefaultDirectory,
@@ -88,13 +96,14 @@ class Authentication {
     return Credentials.fromJSON(result);
   }
 
-  Future<DatabaseUser> createUser(
-      {required String email,
-      String? username,
-      required String password,
-      required String connection,
-      Map<String, dynamic>? userMetadata,
-      Map<String, dynamic>? rootAttributes}) async {
+  Future<DatabaseUser> createUser({
+    required String email,
+    String? username,
+    required String password,
+    required String connection,
+    Map<String, dynamic>? userMetadata,
+    Map<String, dynamic>? rootAttributes,
+  }) async {
     final args = _generateArguments({
       'email': email,
       'username': username,
@@ -112,7 +121,10 @@ class Authentication {
     return DatabaseUser.fromJSON(result);
   }
 
-  Future<void> resetPassword({required String email, required String connection}) async {
+  Future<void> resetPassword({
+    required String email,
+    required String connection,
+  }) async {
     final args = _generateArguments({'email': email, 'connection': connection});
 
     await _invokeMethod(
@@ -121,13 +133,18 @@ class Authentication {
     );
   }
 
-  Future<void> startEmailPasswordless(
-      {required String email,
-      PasswordlessType type = PasswordlessType.code,
-      String connection = 'email',
-      required Map<String, dynamic> parameters}) async {
-    final args =
-        _generateArguments({'email': email, 'type': _passwordlessTypeToString(type), 'connection': connection, 'parameters': parameters});
+  Future<void> startEmailPasswordless({
+    required String email,
+    PasswordlessType type = PasswordlessType.code,
+    String connection = 'email',
+    required Map<String, dynamic> parameters,
+  }) async {
+    final args = _generateArguments({
+      'email': email,
+      'type': _passwordlessTypeToString(type),
+      'connection': connection,
+      'parameters': parameters,
+    });
 
     await _invokeMethod(
       AuthenticationMethod.startEmailPasswordless,
@@ -163,7 +180,11 @@ class Authentication {
     PasswordlessType type = PasswordlessType.code,
     String connection = 'sms',
   }) async {
-    final args = _generateArguments({'phoneNumber': phoneNumber, 'type': _passwordlessTypeToString(type), 'connection': connection});
+    final args = _generateArguments({
+      'phoneNumber': phoneNumber,
+      'type': _passwordlessTypeToString(type),
+      'connection': connection
+    });
 
     await _invokeMethod(
       AuthenticationMethod.startPhoneNumberPasswordless,
@@ -196,15 +217,10 @@ class Authentication {
 
   /// Returns user information by performing a request to /userinfo endpoint.
   /// - warning: for OIDC-conformant clients please use `userInfo(withAccessToken accessToken:)`
+  @Deprecated(
+      'Please use userInfoWithAccessToken. OIDC conformance is now default.')
   Future<Profile> userInfoWithToken(String token) async {
-    final args = _generateArguments({'token': token});
-
-    final result = await _invokeMapMethod<String, dynamic>(
-      AuthenticationMethod.userInfoWithToken,
-      args,
-    );
-
-    return Profile.fromJSON(result);
+    throw PlatformException(code: 'code');
   }
 
   /// Returns OIDC standard claims information by performing a request
@@ -221,16 +237,31 @@ class Authentication {
     return UserInfo.fromJSON(result);
   }
 
+  @Deprecated('Use loginFacebook for Facebook login instead')
   Future<Credentials> loginSocial({
     required String token,
     required String connection,
     String scope = 'openid',
     required Map<String, dynamic> parameters,
   }) async {
-    final args = _generateArguments({'token': token, 'connection': connection, 'scope': scope, 'parameters': parameters});
+    throw PlatformException(code: '');
+  }
+
+  Future<Credentials> loginFacebook({
+    required String sessionAccessToken,
+    required Map<String, dynamic> profile,
+    String scope = 'openid profile offline_access',
+    String? audience,
+  }) async {
+    final args = _generateArguments({
+      'sessionAccessToken': sessionAccessToken,
+      'profile': profile,
+      'scope': scope,
+      'audience': audience,
+    });
 
     final result = await _invokeMapMethod<String, dynamic>(
-      AuthenticationMethod.loginSocial,
+      AuthenticationMethod.loginFacebook,
       args,
     );
 
@@ -250,8 +281,16 @@ class Authentication {
     return Credentials.fromJSON(result);
   }
 
-  Future<Credentials> tokenExchangeWithCode({required String code, required String codeVerifier, required String redirectURI}) async {
-    final args = _generateArguments({'code': code, 'codeVerifier': codeVerifier, 'redirectURI': redirectURI});
+  Future<Credentials> tokenExchangeWithCode({
+    required String code,
+    required String codeVerifier,
+    required String redirectURI,
+  }) async {
+    final args = _generateArguments({
+      'code': code,
+      'codeVerifier': codeVerifier,
+      'redirectURI': redirectURI
+    });
 
     final result = await _invokeMapMethod<String, dynamic>(
       AuthenticationMethod.tokenExchangeWithCode,
@@ -261,8 +300,16 @@ class Authentication {
     return Credentials.fromJSON(result);
   }
 
-  Future<Credentials> appleTokenExchange({required String authCode, String? scope, String? audience}) async {
-    final args = _generateArguments({'authCode': authCode, 'scope': scope, 'audience': audience});
+  Future<Credentials> appleTokenExchange({
+    required String authCode,
+    String? scope,
+    String? audience,
+  }) async {
+    final args = _generateArguments({
+      'authCode': authCode,
+      'scope': scope,
+      'audience': audience,
+    });
 
     final result = await _invokeMapMethod<String, dynamic>(
       AuthenticationMethod.appleTokenExchange,
@@ -272,8 +319,14 @@ class Authentication {
     return Credentials.fromJSON(result);
   }
 
-  Future<Credentials> renew({required String refreshToken, String? scope}) async {
-    final args = _generateArguments({'refreshToken': refreshToken, 'scope': scope});
+  Future<Credentials> renew({
+    required String refreshToken,
+    String? scope,
+  }) async {
+    final args = _generateArguments({
+      'refreshToken': refreshToken,
+      'scope': scope,
+    });
 
     final result = await _invokeMapMethod<String, dynamic>(
       AuthenticationMethod.renew,
@@ -292,7 +345,9 @@ class Authentication {
     );
   }
 
-  Future<Map<String, dynamic>> delegation({required Map<String, dynamic> parameters}) async {
+  Future<Map<String, dynamic>> delegation({
+    required Map<String, dynamic> parameters,
+  }) async {
     final args = _generateArguments({'parameters': parameters});
 
     final result = await _invokeMapMethod<String, dynamic>(
@@ -321,7 +376,8 @@ class Authentication {
     return args;
   }
 
-  Future<Map<K, V>> _invokeMapMethod<K, V>(AuthenticationMethod method, dynamic arguments) async {
+  Future<Map<K, V>> _invokeMapMethod<K, V>(
+      AuthenticationMethod method, dynamic arguments) async {
     final value = await invokeMapMethod<K, V>(
       channel: _channel,
       method: method.stringValue,

@@ -8,18 +8,20 @@ class Credentials {
   final String? idToken;
   final String? scope;
 
-  Credentials(
-      {this.accessToken,
-      this.tokenType,
-      this.expiresIn,
-      this.refreshToken,
-      this.idToken,
-      this.scope});
+  Credentials({
+    this.accessToken,
+    this.tokenType,
+    this.expiresIn,
+    this.refreshToken,
+    this.idToken,
+    this.scope,
+  });
 
   Credentials.fromJSON(Map<String, dynamic> json)
       : this.accessToken = json['access_token'],
         this.tokenType = json['token_type'],
-        this.expiresIn = Credentials._dateFromValue(json['expires_in']),
+        this.expiresIn = Credentials._dateFromValue(
+            json['expires_in'] ?? json['expires_at']),
         this.refreshToken = json['refresh_token'],
         this.idToken = json['id_token'],
         this.scope = json['scope'];

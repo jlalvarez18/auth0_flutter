@@ -1,9 +1,12 @@
-package com.resideo.auth0_flutter;
+package com.auth0.auth0_flutter;
+
+import android.os.Handler;
+import android.os.Looper;
 
 import androidx.annotation.NonNull;
 
 import com.auth0.android.Auth0;
-import com.auth0.android.callback.BaseCallback;
+import com.auth0.android.callback.Callback;
 import com.auth0.android.callback.ManagementCallback;
 import com.auth0.android.management.ManagementException;
 import com.auth0.android.management.UsersAPIClient;
@@ -15,23 +18,19 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import io.flutter.embedding.engine.plugins.FlutterPlugin.FlutterPluginBinding;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
-import io.flutter.plugin.common.PluginRegistry.Registrar;
 
 public class UsersController implements MethodCallHandler {
-    private final Registrar registrar;
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
-    static void registerWith(Registrar registrar) {
-        final MethodChannel channel = new MethodChannel(registrar.messenger(), "plugins.auth0_flutter.io/users");
+    static void registerWith(FlutterPluginBinding binding) {
+        final MethodChannel channel = new MethodChannel(binding.getBinaryMessenger(), "plugins.auth0_flutter.io/users");
 
-        channel.setMethodCallHandler(new UsersController(registrar));
-    }
-
-    private UsersController(Registrar registrar) {
-        this.registrar = registrar;
+        channel.setMethodCallHandler(new UsersController());
     }
 
     @Override
@@ -42,6 +41,7 @@ public class UsersController implements MethodCallHandler {
 
         assert clientId != null;
         assert domain != null;
+        assert token != null;
 
         final Auth0 auth0 = new Auth0(clientId, domain);
         UsersAPIClient apiClient = new UsersAPIClient(auth0, token);
@@ -53,12 +53,12 @@ public class UsersController implements MethodCallHandler {
 
                 Request<UserProfile, ManagementException> request = apiClient.getProfile(identifier);
 
-                request.start(new BaseCallback<UserProfile, ManagementException>() {
+                request.start(new Callback<UserProfile, ManagementException>() {
                     @Override
                     public void onSuccess(UserProfile payload) {
                         final HashMap<String, Object> obj = JSONHelpers.profileTOJSON(payload);
 
-                        registrar.activity().runOnUiThread(new Runnable() {
+                        mainHandler.post(new Runnable() {
                             @Override
                             public void run() {
                                 result.success(obj);
@@ -67,8 +67,8 @@ public class UsersController implements MethodCallHandler {
                     }
 
                     @Override
-                    public void onFailure(final ManagementException error) {
-                        registrar.activity().runOnUiThread(new Runnable() {
+                    public void onFailure(@NonNull final ManagementException error) {
+                        mainHandler.post(new Runnable() {
                             @Override
                             public void run() {
                                 final HashMap<String, String> info = JSONHelpers.managementExceptionToJSON(error);
@@ -86,12 +86,12 @@ public class UsersController implements MethodCallHandler {
                 assert primaryUserId != null;
                 assert otherUserToken != null;
 
-                apiClient.link(primaryUserId, otherUserToken).start(new BaseCallback<List<UserIdentity>, ManagementException>() {
+                apiClient.link(primaryUserId, otherUserToken).start(new Callback<List<UserIdentity>, ManagementException>() {
                     @Override
                     public void onSuccess(List<UserIdentity> payload) {
                         final ArrayList<HashMap<String, Object>> obj = JSONHelpers.identitiesToJSON(payload);
 
-                        registrar.activity().runOnUiThread(new Runnable() {
+                        mainHandler.post(new Runnable() {
                             @Override
                             public void run() {
                                 result.success(obj);
@@ -100,8 +100,8 @@ public class UsersController implements MethodCallHandler {
                     }
 
                     @Override
-                    public void onFailure(final ManagementException error) {
-                        registrar.activity().runOnUiThread(new Runnable() {
+                    public void onFailure(@NonNull final ManagementException error) {
+                        mainHandler.post(new Runnable() {
                             @Override
                             public void run() {
                                 final HashMap<String, String> info = JSONHelpers.managementExceptionToJSON(error);
@@ -122,12 +122,12 @@ public class UsersController implements MethodCallHandler {
                 assert provider != null;
                 assert fromUserId != null;
 
-                apiClient.unlink(identityId, fromUserId, provider).start(new BaseCallback<List<UserIdentity>, ManagementException>() {
+                apiClient.unlink(identityId, fromUserId, provider).start(new Callback<List<UserIdentity>, ManagementException>() {
                     @Override
                     public void onSuccess(List<UserIdentity> payload) {
                         final ArrayList<HashMap<String, Object>> obj = JSONHelpers.identitiesToJSON(payload);
 
-                        registrar.activity().runOnUiThread(new Runnable() {
+                        mainHandler.post(new Runnable() {
                             @Override
                             public void run() {
                                 result.success(obj);
@@ -136,8 +136,8 @@ public class UsersController implements MethodCallHandler {
                     }
 
                     @Override
-                    public void onFailure(final ManagementException error) {
-                        registrar.activity().runOnUiThread(new Runnable() {
+                    public void onFailure(@NonNull final ManagementException error) {
+                        mainHandler.post(new Runnable() {
                             @Override
                             public void run() {
                                 final HashMap<String, String> info = JSONHelpers.managementExceptionToJSON(error);
@@ -152,12 +152,15 @@ public class UsersController implements MethodCallHandler {
                 final String primaryUserId = call.argument("identifier");
                 final String userId = call.argument("userId");
 
+                assert primaryUserId != null;
+                assert userId != null;
+
                 apiClient.link(primaryUserId, userId).start(new ManagementCallback<List<UserIdentity>>() {
                     @Override
                     public void onSuccess(final List<UserIdentity> payload) {
                         final ArrayList<HashMap<String, Object>> obj = JSONHelpers.identitiesToJSON(payload);
 
-                        registrar.activity().runOnUiThread(new Runnable() {
+                        mainHandler.post(new Runnable() {
                             @Override
                             public void run() {
                                 result.success(obj);
@@ -166,8 +169,8 @@ public class UsersController implements MethodCallHandler {
                     }
 
                     @Override
-                    public void onFailure(final ManagementException error) {
-                        registrar.activity().runOnUiThread(new Runnable() {
+                    public void onFailure(@NonNull final ManagementException error) {
+                        mainHandler.post(new Runnable() {
                             @Override
                             public void run() {
                                 final HashMap<String, String> info = JSONHelpers.managementExceptionToJSON(error);
@@ -187,6 +190,9 @@ public class UsersController implements MethodCallHandler {
                 final String primaryUserId = call.argument("identifier");
                 final HashMap<String, Object> metadata = call.argument("userMetadata");
 
+                assert primaryUserId != null;
+                assert metadata != null;
+
                 Request<UserProfile, ManagementException> request = apiClient.updateMetadata(primaryUserId, metadata);
 
                 request.start(new ManagementCallback<UserProfile>() {
@@ -194,7 +200,7 @@ public class UsersController implements MethodCallHandler {
                     public void onSuccess(UserProfile payload) {
                         final HashMap<String, Object> obj = JSONHelpers.profileTOJSON(payload);
 
-                        registrar.activity().runOnUiThread(new Runnable() {
+                        mainHandler.post(new Runnable() {
                             @Override
                             public void run() {
                                 result.success(obj);
@@ -203,8 +209,8 @@ public class UsersController implements MethodCallHandler {
                     }
 
                     @Override
-                    public void onFailure(final ManagementException error) {
-                        registrar.activity().runOnUiThread(new Runnable() {
+                    public void onFailure(@NonNull final ManagementException error) {
+                        mainHandler.post(new Runnable() {
                             @Override
                             public void run() {
                                 final HashMap<String, String> info = JSONHelpers.managementExceptionToJSON(error);

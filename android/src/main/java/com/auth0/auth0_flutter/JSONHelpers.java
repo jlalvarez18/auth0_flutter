@@ -1,4 +1,4 @@
-package com.resideo.auth0_flutter;
+package com.auth0.auth0_flutter;
 
 import com.auth0.android.authentication.AuthenticationException;
 import com.auth0.android.authentication.storage.CredentialsManagerException;
@@ -28,10 +28,15 @@ class JSONHelpers {
         HashMap<String, Object>  obj = new HashMap<>();
         obj.put("access_token", credentials.getAccessToken());
         obj.put("token_type", credentials.getType());
-        obj.put("expires_in", credentials.getExpiresIn());
         obj.put("refresh_token", credentials.getRefreshToken());
         obj.put("id_token", credentials.getIdToken());
         obj.put("scope", credentials.getScope());
+
+        Date expiresAt = credentials.getExpiresAt();
+        long milli = expiresAt.getTime();
+        long secs = milli / 1000;
+
+        obj.put("expires_in", secs);
 
         return obj;
     }

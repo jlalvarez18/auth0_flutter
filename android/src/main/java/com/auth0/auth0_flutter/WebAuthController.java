@@ -1,21 +1,24 @@
-package com.resideo.auth0_flutter;
+package com.auth0.auth0_flutter;
 
 import android.app.Dialog;
+import android.os.Handler;
+import android.os.Looper;
 
 import androidx.annotation.NonNull;
 
 import com.auth0.android.Auth0;
 import com.auth0.android.Auth0Exception;
 import com.auth0.android.authentication.AuthenticationException;
+import com.auth0.android.callback.Callback;
 import com.auth0.android.provider.AuthCallback;
-import com.auth0.android.provider.ResponseType;
-import com.auth0.android.provider.VoidCallback;
+
 import com.auth0.android.provider.WebAuthProvider;
 import com.auth0.android.result.Credentials;
 
 import java.util.HashMap;
 import java.util.List;
 
+import io.flutter.embedding.engine.plugins.FlutterPlugin.FlutterPluginBinding;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
@@ -23,16 +26,17 @@ import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
 
 public class WebAuthController implements MethodCallHandler {
-    private final Registrar registrar;
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
+    private final FlutterPluginBinding binding;
 
-    static void registerWith(Registrar registrar) {
-        final MethodChannel channel = new MethodChannel(registrar.messenger(), "plugins.auth0_flutter.io/web_auth");
-
-        channel.setMethodCallHandler(new WebAuthController(registrar));
+    private WebAuthController(FlutterPluginBinding binding) {
+        this.binding = binding;
     }
 
-    private WebAuthController(Registrar registrar) {
-        this.registrar = registrar;
+    static void registerWith(FlutterPluginBinding binding) {
+        final MethodChannel channel = new MethodChannel(binding.getBinaryMessenger(), "plugins.auth0_flutter.io/web_auth");
+
+        channel.setMethodCallHandler(new WebAuthController(binding));
     }
 
     @Override
@@ -44,38 +48,33 @@ public class WebAuthController implements MethodCallHandler {
         assert domain != null;
 
         final Auth0 auth0 = new Auth0(clientId, domain);
-        auth0.setOIDCConformant(true);
 
         switch (methodCall.method) {
             case WebAuthMethodName.start: {
                 final WebAuthProvider.Builder webAuth = webAuth(auth0, methodCall);
 
-                webAuth.start(registrar.activity(), new AuthCallback() {
+                webAuth.start(binding.getApplicationContext(), new Callback<Credentials, AuthenticationException>() {
                     @Override
-                    public void onFailure(@NonNull Dialog dialog) {}
+                    public void onSuccess(Credentials credentials) {
+                        final HashMap<String, Object> obj = JSONHelpers.credentialsToJSON(credentials);
 
-                    @Override
-                    public void onFailure(AuthenticationException exception) {
-                        final HashMap<String, Object> obj = JSONHelpers.authErrorToJSON(exception);
-
-                        final String message = exception.getLocalizedMessage();
-
-                        registrar.activity().runOnUiThread(new Runnable() {
+                        mainHandler.post(new Runnable() {
                             @Override
                             public void run() {
-                                result.error("", message, obj);
+                                result.success(obj);
                             }
                         });
                     }
 
                     @Override
-                    public void onSuccess(@NonNull Credentials credentials) {
-                        final HashMap<String, Object> obj = JSONHelpers.credentialsToJSON(credentials);
+                    public void onFailure(@NonNull AuthenticationException exception) {
+                        final HashMap<String, Object> obj = JSONHelpers.authErrorToJSON(exception);
+                        final String message = exception.getLocalizedMessage();
 
-                        registrar.activity().runOnUiThread(new Runnable() {
+                        mainHandler.post(new Runnable() {
                             @Override
                             public void run() {
-                                result.success(obj);
+                                result.error("", message, obj);
                             }
                         });
                     }
@@ -91,10 +90,10 @@ public class WebAuthController implements MethodCallHandler {
                     builder.withScheme(scheme);
                 }
 
-                builder.start(registrar.activeContext(), new VoidCallback() {
+                builder.start(binding.getApplicationContext(), new Callback<Void, AuthenticationException>() {
                     @Override
-                    public void onSuccess(Void payload) {
-                        registrar.activity().runOnUiThread(new Runnable() {
+                    public void onSuccess(Void unused) {
+                        mainHandler.post(new Runnable() {
                             @Override
                             public void run() {
                                 result.success(true);
@@ -103,8 +102,8 @@ public class WebAuthController implements MethodCallHandler {
                     }
 
                     @Override
-                    public void onFailure(Auth0Exception error) {
-                        registrar.activity().runOnUiThread(new Runnable() {
+                    public void onFailure(AuthenticationException e) {
+                        mainHandler.post(new Runnable() {
                             @Override
                             public void run() {
                                 result.success(false);
@@ -129,38 +128,19 @@ public class WebAuthController implements MethodCallHandler {
             webAuth.withScheme(scheme);
         }
 
-        final List<String> responseTypeStrings = methodCall.argument("responseType");
-        assert responseTypeStrings != null;
-
-        int t = 0;
-
-        for (String value: responseTypeStrings) {
-            switch (value) {
-                case "token": {
-                    t += t | ResponseType.TOKEN;
-                    break;
-                }
-                case "idToken": {
-                    t += t | ResponseType.ID_TOKEN;
-                    break;
-                }
-                case "code": {
-                    t += t | ResponseType.CODE;
-                    break;
-                }
-            }
-        }
-
-        webAuth.withResponseType(t);
-
         final String nonce = methodCall.argument("nonce");
         if (nonce != null) {
             webAuth.withNonce(nonce);
         }
 
-        HashMap<String, Object> params = methodCall.argument("parameters");
+        final HashMap<String, Object> params = methodCall.argument("parameters");
         if (params != null) {
             webAuth.withParameters(params);
+        }
+
+        final String connectionScope = methodCall.argument("connection_scope");
+        if (connectionScope != null) {
+            webAuth.withConnectionScope(connectionScope);
         }
 
         return webAuth;

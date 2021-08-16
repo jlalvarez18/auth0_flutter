@@ -1,13 +1,13 @@
 PODS:
-  - Auth0 (1.26.0):
+  - Auth0 (1.35.0):
     - JWTDecode
     - SimpleKeychain
   - auth0_flutter (0.0.1):
-    - Auth0 (= 1.26.0)
+    - Auth0 (= 1.35.0)
     - Flutter
   - Flutter (1.0.0)
-  - JWTDecode (2.6.0)
-  - SimpleKeychain (0.12.2)
+  - JWTDecode (2.6.1)
+  - SimpleKeychain (0.12.3)
 
 DEPENDENCIES:
   - auth0_flutter (from `.symlinks/plugins/auth0_flutter/ios`)
@@ -26,11 +26,11 @@ EXTERNAL SOURCES:
     :path: Flutter
 
 SPEC CHECKSUMS:
-  Auth0: bb6b64e4927e31ea62583c25bb9d2ed12b7642ee
-  auth0_flutter: 1932ac2140e83a828223568c07c71dd37a02a157
+  Auth0: 185a5f83dbcea58fc4b37c4785108fcb54026000
+  auth0_flutter: b336f8973aee6e65a9492ac50cc418c49af534ce
   Flutter: 434fef37c0980e73bb6479ef766c45957d4b510c
-  JWTDecode: 480ca441ddbd5fbfb2abf17870af62f86436be58
-  SimpleKeychain: d6a74781e20ebac8cd89deebf593587913aeed07
+  JWTDecode: 5e6d4b49c2b098f994cf7617401c195c8c06300b
+  SimpleKeychain: a0d119d6a3546441c93540cd9dd1342b0b6cdcbb
 
 PODFILE CHECKSUM: a75497545d4391e2d394c3668e20cfb1c2bbd4aa
 

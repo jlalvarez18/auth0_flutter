@@ -1,4 +1,7 @@
-package com.resideo.auth0_flutter;
+package com.auth0.auth0_flutter;
+
+import android.os.Handler;
+import android.os.Looper;
 
 import androidx.annotation.NonNull;
 
@@ -6,32 +9,33 @@ import com.auth0.android.Auth0;
 import com.auth0.android.authentication.AuthenticationAPIClient;
 import com.auth0.android.authentication.AuthenticationException;
 import com.auth0.android.authentication.PasswordlessType;
-import com.auth0.android.authentication.request.DatabaseConnectionRequest;
 import com.auth0.android.callback.AuthenticationCallback;
-import com.auth0.android.callback.BaseCallback;
+import com.auth0.android.callback.Callback;
 import com.auth0.android.request.AuthenticationRequest;
+import com.auth0.android.request.Request;
 import com.auth0.android.result.Credentials;
 import com.auth0.android.result.DatabaseUser;
 import com.auth0.android.result.UserProfile;
 
-import java.util.HashMap;
+import org.json.JSONObject;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import io.flutter.embedding.engine.plugins.FlutterPlugin.FlutterPluginBinding;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
-import io.flutter.plugin.common.PluginRegistry.Registrar;
 
 public class AuthenticationController implements MethodCallHandler {
-    private final Registrar registrar;
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
-    static void registerWith(Registrar registrar) {
-        final MethodChannel channel = new MethodChannel(registrar.messenger(), "plugins.auth0_flutter.io/authentication");
+    static void registerWith(FlutterPluginBinding binding) {
+        final MethodChannel channel = new MethodChannel(binding.getBinaryMessenger(), "plugins.auth0_flutter.io/authentication");
 
-        channel.setMethodCallHandler(new AuthenticationController(registrar));
+        channel.setMethodCallHandler(new AuthenticationController());
     }
-
-    private AuthenticationController(Registrar registrar) { this.registrar = registrar; }
 
     @Override
     public void onMethodCall(MethodCall call, @NonNull final Result result) {
@@ -42,7 +46,6 @@ public class AuthenticationController implements MethodCallHandler {
         assert domain != null;
 
         final Auth0 auth0 = new Auth0(clientId, domain);
-        auth0.setOIDCConformant(true);
 
         AuthenticationAPIClient authClient = new AuthenticationAPIClient(auth0);
 
@@ -56,30 +59,29 @@ public class AuthenticationController implements MethodCallHandler {
                 assert password != null;
                 assert realm != null;
 
-                final String audience = call.argument("audience");
-                final String scope = call.argument("scope");
-
                 final AuthenticationRequest request = authClient.login(usernameOrEmail, password, realm);
 
+                final String audience = call.argument("audience");
                 if (audience != null) {
                     request.setAudience(audience);
                 }
 
+                final String scope = call.argument("scope");
                 if (scope != null) {
                     request.setScope(scope);
                 }
 
-                HashMap<String, Object> params = call.argument("parameters");
+                HashMap<String, String> params = call.argument("parameters");
                 if (params != null) {
-                    request.addAuthenticationParameters(params);
+                    request.addParameters(params);
                 }
 
-                request.start(new BaseCallback<Credentials, AuthenticationException>() {
+                request.start(new AuthenticationCallback<Credentials>() {
                     @Override
-                    public void onSuccess(Credentials payload) {
-                        final HashMap<String, Object> obj = JSONHelpers.credentialsToJSON(payload);
+                    public void onSuccess(Credentials credentials) {
+                        final HashMap<String, Object> obj = JSONHelpers.credentialsToJSON(credentials);
 
-                        registrar.activity().runOnUiThread(new Runnable() {
+                        mainHandler.post(new Runnable() {
                             @Override
                             public void run() {
                                 result.success(obj);
@@ -88,12 +90,12 @@ public class AuthenticationController implements MethodCallHandler {
                     }
 
                     @Override
-                    public void onFailure(AuthenticationException error) {
-                        final HashMap<String, Object> obj = JSONHelpers.authErrorToJSON(error);
+                    public void onFailure(@NonNull AuthenticationException e) {
+                        final HashMap<String, Object> obj = JSONHelpers.authErrorToJSON(e);
 
-                        final String message = error.getLocalizedMessage();
+                        final String message = e.getLocalizedMessage();
 
-                        registrar.activity().runOnUiThread(new Runnable() {
+                        mainHandler.post(new Runnable() {
                             @Override
                             public void run() {
                                 result.error("", message, obj);
@@ -101,6 +103,7 @@ public class AuthenticationController implements MethodCallHandler {
                         });
                     }
                 });
+
                 break;
             }
 
@@ -111,12 +114,12 @@ public class AuthenticationController implements MethodCallHandler {
                 assert otp != null;
                 assert mfaToken != null;
 
-                authClient.loginWithOTP(mfaToken, otp).start(new BaseCallback<Credentials, AuthenticationException>() {
+                authClient.loginWithOTP(mfaToken, otp).start(new Callback<Credentials, AuthenticationException>() {
                     @Override
                     public void onSuccess(Credentials payload) {
                         final HashMap<String, Object> obj = JSONHelpers.credentialsToJSON(payload);
 
-                        registrar.activity().runOnUiThread(new Runnable() {
+                        mainHandler.post(new Runnable() {
                             @Override
                             public void run() {
                                 result.success(obj);
@@ -125,12 +128,12 @@ public class AuthenticationController implements MethodCallHandler {
                     }
 
                     @Override
-                    public void onFailure(AuthenticationException error) {
+                    public void onFailure(@NonNull AuthenticationException error) {
                         final HashMap<String, Object> obj = JSONHelpers.authErrorToJSON(error);
 
                         final String message = error.getLocalizedMessage();
 
-                        registrar.activity().runOnUiThread(new Runnable() {
+                        mainHandler.post(new Runnable() {
                             @Override
                             public void run() {
                                 result.error("", message, obj);
@@ -155,7 +158,7 @@ public class AuthenticationController implements MethodCallHandler {
                 assert password != null;
                 assert connection != null;
 
-                final DatabaseConnectionRequest<DatabaseUser, AuthenticationException> request;
+                final Request<DatabaseUser, AuthenticationException> request;
 
                 if (username != null) {
                     request = authClient.createUser(email, password, username, connection);
@@ -163,12 +166,12 @@ public class AuthenticationController implements MethodCallHandler {
                     request = authClient.createUser(email, password, connection);
                 }
 
-                request.start(new BaseCallback<DatabaseUser, AuthenticationException>() {
+                request.start(new Callback<DatabaseUser, AuthenticationException>() {
                     @Override
                     public void onSuccess(DatabaseUser payload) {
                         final HashMap<String, Object> obj = JSONHelpers.databaseUserToJSON(payload);
 
-                        registrar.activity().runOnUiThread(new Runnable() {
+                        mainHandler.post(new Runnable() {
                             @Override
                             public void run() {
                                 result.success(obj);
@@ -177,15 +180,14 @@ public class AuthenticationController implements MethodCallHandler {
                     }
 
                     @Override
-                    public void onFailure(AuthenticationException error) {
+                    public void onFailure(@NonNull AuthenticationException error) {
                         final HashMap<String, Object> obj = JSONHelpers.authErrorToJSON(error);
 
                         final String message = error.getLocalizedMessage();
 
-                        registrar.activity().runOnUiThread(new Runnable() {
+                        mainHandler.post(new Runnable() {
                             @Override
-                            public void run() {
-                                result.error("", message, obj);
+                            public void run() { result.error("", message, obj);
                             }
                         });
                     }
@@ -200,27 +202,25 @@ public class AuthenticationController implements MethodCallHandler {
                 assert email != null;
                 assert connection != null;
 
-                authClient.resetPassword(email, connection).start(new BaseCallback<Void, AuthenticationException>() {
+                authClient.resetPassword(email, connection).start(new Callback<Void, AuthenticationException>() {
                     @Override
                     public void onSuccess(Void payload) {
-                        registrar.activity().runOnUiThread(new Runnable() {
+                        mainHandler.post(new Runnable() {
                             @Override
-                            public void run() {
-                                result.success(null);
+                            public void run() { result.success(null);
                             }
                         });
                     }
 
                     @Override
-                    public void onFailure(AuthenticationException error) {
+                    public void onFailure(@NonNull AuthenticationException error) {
                         final HashMap<String, Object> obj = JSONHelpers.authErrorToJSON(error);
 
                         final String message = error.getLocalizedMessage();
 
-                        registrar.activity().runOnUiThread(new Runnable() {
+                        mainHandler.post(new Runnable() {
                             @Override
-                            public void run() {
-                                result.error("", message, obj);
+                            public void run() { result.error("", message, obj);
                             }
                         });
                     }
@@ -237,27 +237,25 @@ public class AuthenticationController implements MethodCallHandler {
 
                 final PasswordlessType type = PasswordlessType.valueOf(typeString);
 
-                authClient.passwordlessWithEmail(email, type).start(new BaseCallback<Void, AuthenticationException>() {
+                authClient.passwordlessWithEmail(email, type).start(new Callback<Void, AuthenticationException>() {
                     @Override
                     public void onSuccess(Void payload) {
-                        registrar.activity().runOnUiThread(new Runnable() {
+                        mainHandler.post(new Runnable() {
                             @Override
-                            public void run() {
-                                result.success(null);
+                            public void run() { result.success(null);
                             }
                         });
                     }
 
                     @Override
-                    public void onFailure(AuthenticationException error) {
+                    public void onFailure(@NonNull AuthenticationException error) {
                         final HashMap<String, Object> obj = JSONHelpers.authErrorToJSON(error);
 
                         final String message = error.getLocalizedMessage();
 
-                        registrar.activity().runOnUiThread(new Runnable() {
+                        mainHandler.post(new Runnable() {
                             @Override
-                            public void run() {
-                                result.error("", message, obj);
+                            public void run() { result.error("", message, obj);
                             }
                         });
                     }
@@ -274,27 +272,25 @@ public class AuthenticationController implements MethodCallHandler {
 
                 final PasswordlessType type = PasswordlessType.valueOf(typeString);
 
-                authClient.passwordlessWithSMS(phoneNumber, type).start(new BaseCallback<Void, AuthenticationException>() {
+                authClient.passwordlessWithSMS(phoneNumber, type).start(new Callback<Void, AuthenticationException>() {
                     @Override
                     public void onSuccess(Void payload) {
-                        registrar.activity().runOnUiThread(new Runnable() {
+                        mainHandler.post(new Runnable() {
                             @Override
-                            public void run() {
-                                result.success(null);
+                            public void run() { result.success(null);
                             }
                         });
                     }
 
                     @Override
-                    public void onFailure(AuthenticationException error) {
+                    public void onFailure(@NonNull AuthenticationException error) {
                         final HashMap<String, Object> obj = JSONHelpers.authErrorToJSON(error);
 
                         final String message = error.getLocalizedMessage();
 
-                        registrar.activity().runOnUiThread(new Runnable() {
+                        mainHandler.post(new Runnable() {
                             @Override
-                            public void run() {
-                                result.error("", message, obj);
+                            public void run() { result.error("", message, obj);
                             }
                         });
                     }
@@ -309,29 +305,27 @@ public class AuthenticationController implements MethodCallHandler {
                 assert email != null;
                 assert code != null;
 
-                authClient.loginWithEmail(email, code).start(new BaseCallback<Credentials, AuthenticationException>() {
+                authClient.loginWithEmail(email, code).start(new Callback<Credentials, AuthenticationException>() {
                     @Override
                     public void onSuccess(Credentials payload) {
                         final HashMap<String, Object> obj = JSONHelpers.credentialsToJSON(payload);
 
-                        registrar.activity().runOnUiThread(new Runnable() {
+                        mainHandler.post(new Runnable() {
                             @Override
-                            public void run() {
-                                result.success(obj);
+                            public void run() { result.success(obj);
                             }
                         });
                     }
 
                     @Override
-                    public void onFailure(AuthenticationException error) {
+                    public void onFailure(@NonNull AuthenticationException error) {
                         final HashMap<String, Object> obj = JSONHelpers.authErrorToJSON(error);
 
                         final String message = error.getLocalizedMessage();
 
-                        registrar.activity().runOnUiThread(new Runnable() {
+                        mainHandler.post(new Runnable() {
                             @Override
-                            public void run() {
-                                result.error("", message, obj);
+                            public void run() { result.error("", message, obj);
                             }
                         });
                     }
@@ -346,12 +340,12 @@ public class AuthenticationController implements MethodCallHandler {
                 assert phoneNumber != null;
                 assert code != null;
 
-                authClient.loginWithPhoneNumber(phoneNumber, code).start(new BaseCallback<Credentials, AuthenticationException>() {
+                authClient.loginWithPhoneNumber(phoneNumber, code).start(new Callback<Credentials, AuthenticationException>() {
                     @Override
                     public void onSuccess(Credentials payload) {
                         final HashMap<String, Object> obj = JSONHelpers.credentialsToJSON(payload);
 
-                        registrar.activity().runOnUiThread(new Runnable() {
+                        mainHandler.post(new Runnable() {
                             @Override
                             public void run() {
                                 result.success(obj);
@@ -360,50 +354,14 @@ public class AuthenticationController implements MethodCallHandler {
                     }
 
                     @Override
-                    public void onFailure(AuthenticationException error) {
+                    public void onFailure(@NonNull AuthenticationException error) {
                         final HashMap<String, Object> obj = JSONHelpers.authErrorToJSON(error);
 
                         final String message = error.getLocalizedMessage();
 
-                        registrar.activity().runOnUiThread(new Runnable() {
+                        mainHandler.post(new Runnable() {
                             @Override
-                            public void run() {
-                                result.error("", message, obj);
-                            }
-                        });
-                    }
-                });
-                break;
-            }
-
-            case AuthMethodName.userInfoWithToken: {
-                final String token = call.argument("token");
-
-                assert token != null;
-
-                authClient.tokenInfo(token).start(new BaseCallback<UserProfile, AuthenticationException>() {
-                    @Override
-                    public void onSuccess(UserProfile payload) {
-                        final HashMap<String, Object> obj = JSONHelpers.profileTOJSON(payload);
-
-                        registrar.activity().runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                result.success(obj);
-                            }
-                        });
-                    }
-
-                    @Override
-                    public void onFailure(AuthenticationException error) {
-                        final HashMap<String, Object> obj = JSONHelpers.authErrorToJSON(error);
-
-                        final String message = error.getLocalizedMessage();
-
-                        registrar.activity().runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                result.error("", message, obj);
+                            public void run() { result.error("", message, obj);
                             }
                         });
                     }
@@ -420,24 +378,22 @@ public class AuthenticationController implements MethodCallHandler {
                     public void onSuccess(UserProfile payload) {
                         final HashMap<String, Object> obj = JSONHelpers.profileTOJSON(payload);
 
-                        registrar.activity().runOnUiThread(new Runnable() {
+                        mainHandler.post(new Runnable() {
                             @Override
-                            public void run() {
-                                result.success(obj);
+                            public void run() { result.success(obj);
                             }
                         });
                     }
 
                     @Override
-                    public void onFailure(AuthenticationException error) {
+                    public void onFailure(@NonNull AuthenticationException error) {
                         final HashMap<String, Object> obj = JSONHelpers.authErrorToJSON(error);
 
                         final String message = error.getLocalizedMessage();
 
-                        registrar.activity().runOnUiThread(new Runnable() {
+                        mainHandler.post(new Runnable() {
                             @Override
-                            public void run() {
-                                result.error("", message, obj);
+                            public void run() { result.error("", message, obj);
                             }
                         });
                     }
@@ -445,38 +401,53 @@ public class AuthenticationController implements MethodCallHandler {
                 break;
             }
 
-            case AuthMethodName.loginSocial: {
-                final String token = call.argument("token");
-                final String connection = call.argument("connection");
+            case AuthMethodName.loginFacebook: {
+                final String token = call.argument("sessionAccessToken");
+                final Map<String, String> profile = call.argument("profile");
+                final String scope = call.argument("scope");
 
                 assert token != null;
-                assert connection != null;
+                assert profile != null;
+                assert scope != null;
 
-                final AuthenticationRequest request = authClient.loginWithOAuthAccessToken(token, connection);
+                final JSONObject profileJson = new JSONObject(profile);
 
-                request.start(new BaseCallback<Credentials, AuthenticationException>() {
+                Map<String, String> params = new HashMap<>();
+                params.put("user_profile", profileJson.toString());
+
+                final String tokenType = "http://auth0.com/oauth/token-type/facebook-info-session-access-token";
+
+                final AuthenticationRequest request = (AuthenticationRequest) authClient
+                        .loginWithNativeSocialToken(token, tokenType)
+                        .setScope(scope)
+                        .addParameters(params);
+
+                final String audience = call.argument("audience");
+                if (audience != null) {
+                    request.setAudience(audience);
+                }
+
+                request.start(new Callback<Credentials, AuthenticationException>() {
                     @Override
                     public void onSuccess(Credentials payload) {
                         final HashMap<String, Object> obj = JSONHelpers.credentialsToJSON(payload);
 
-                        registrar.activity().runOnUiThread(new Runnable() {
+                        mainHandler.post(new Runnable() {
                             @Override
-                            public void run() {
-                                result.success(obj);
+                            public void run() { result.success(obj);
                             }
                         });
                     }
 
                     @Override
-                    public void onFailure(AuthenticationException error) {
+                    public void onFailure(@NonNull AuthenticationException error) {
                         final HashMap<String, Object> obj = JSONHelpers.authErrorToJSON(error);
 
                         final String message = error.getLocalizedMessage();
 
-                        registrar.activity().runOnUiThread(new Runnable() {
+                        mainHandler.post(new Runnable() {
                             @Override
-                            public void run() {
-                                result.error("", message, obj);
+                            public void run() { result.error("", message, obj);
                             }
                         });
                     }
@@ -506,7 +477,7 @@ public class AuthenticationController implements MethodCallHandler {
                     public void onSuccess(Credentials payload) {
                         final HashMap<String, Object> obj = JSONHelpers.credentialsToJSON(payload);
 
-                        registrar.activity().runOnUiThread(new Runnable() {
+                        mainHandler.post(new Runnable() {
                             @Override
                             public void run() {
                                 result.success(obj);
@@ -515,14 +486,15 @@ public class AuthenticationController implements MethodCallHandler {
                     }
 
                     @Override
-                    public void onFailure(AuthenticationException error) {
+                    public void onFailure(@NonNull AuthenticationException error) {
                         final HashMap<String, Object> obj = JSONHelpers.authErrorToJSON(error);
 
                         final String message = error.getLocalizedMessage();
 
-                        registrar.activity().runOnUiThread(new Runnable() {
+                        mainHandler.post(new Runnable() {
                             @Override
-                            public void run() { result.error("", message, obj);
+                            public void run() {
+                                result.error("", message, obj);
                             }
                         });
                     }
@@ -538,20 +510,21 @@ public class AuthenticationController implements MethodCallHandler {
                 authClient.revokeToken(refreshToken).start(new AuthenticationCallback<Void>() {
                     @Override
                     public void onSuccess(Void payload) {
-                        registrar.activity().runOnUiThread(new Runnable() {
+                        mainHandler.post(new Runnable() {
                             @Override
-                            public void run() { result.success(true);
+                            public void run() {
+                                result.success(true);
                             }
                         });
                     }
 
                     @Override
-                    public void onFailure(AuthenticationException error) {
+                    public void onFailure(@NonNull AuthenticationException error) {
                         final HashMap<String, Object> obj = JSONHelpers.authErrorToJSON(error);
 
                         final String message = error.getLocalizedMessage();
 
-                        registrar.activity().runOnUiThread(new Runnable() {
+                        mainHandler.post(new Runnable() {
                             @Override
                             public void run() { result.error("", message, obj);
                             }
@@ -581,9 +554,8 @@ class AuthMethodName {
     static final String startPhoneNumberPasswordless = "startPhoneNumberPasswordless";
     static final String loginEmailPasswordless = "loginEmailPasswordless";
     static final String loginPhoneNumberPasswordless = "loginPhoneNumberPasswordless";
-    static final String userInfoWithToken = "userInfoWithToken";
     static final String userInfoWithAccessToken = "userInfoWithAccessToken";
-    static final String loginSocial = "loginSocial";
+    static final String loginFacebook = "loginFacebook";
     static final String tokenExchangeWithParameters = "tokenExchangeWithParams";
     static final String tokenExchangeWithCode = "tokenExchangeWithCode";
     static final String appleTokenExchange = "appleTokenExchange";

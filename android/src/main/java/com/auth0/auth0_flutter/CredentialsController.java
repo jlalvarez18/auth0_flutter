@@ -1,6 +1,10 @@
-package com.resideo.auth0_flutter;
+package com.auth0.auth0_flutter;
 
+import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.os.Handler;
+import android.os.Looper;
 
 import androidx.annotation.NonNull;
 
@@ -9,32 +13,35 @@ import com.auth0.android.authentication.AuthenticationAPIClient;
 import com.auth0.android.authentication.storage.CredentialsManagerException;
 import com.auth0.android.authentication.storage.SecureCredentialsManager;
 import com.auth0.android.authentication.storage.SharedPreferencesStorage;
-import com.auth0.android.callback.BaseCallback;
+import com.auth0.android.callback.Callback;
 import com.auth0.android.result.Credentials;
 
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.flutter.embedding.engine.plugins.FlutterPlugin;
+import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry;
-import io.flutter.plugin.common.PluginRegistry.Registrar;
 
 public class CredentialsController implements MethodCallHandler {
-    private final Registrar registrar;
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
+
+    ActivityPluginBinding activityBinding;
+
     private SecureCredentialsManager _manager;
 
-    static void registerWith(Registrar registrar) {
-        final MethodChannel channel = new MethodChannel(registrar.messenger(), "plugins.auth0_flutter.io/credentials_manager");
+    static CredentialsController registerWith(FlutterPlugin.FlutterPluginBinding binding) {
+        final CredentialsController controller = new CredentialsController();
 
-        channel.setMethodCallHandler(new CredentialsController(registrar));
-    }
+        final MethodChannel channel = new MethodChannel(binding.getBinaryMessenger(), "plugins.auth0_flutter.io/credentials_manager");
+        channel.setMethodCallHandler(controller);
 
-    private CredentialsController(Registrar registrar) {
-        this.registrar = registrar;
+        return controller;
     }
 
     private SecureCredentialsManager getCredentialsManager(MethodCall methodCall) {
@@ -46,12 +53,13 @@ public class CredentialsController implements MethodCallHandler {
             assert domain != null;
 
             final Auth0 auth0 = new Auth0(clientId, domain);
-            auth0.setOIDCConformant(true);
+
+            final Context context = activityBinding.getActivity().getApplicationContext();
 
             final AuthenticationAPIClient apiClient = new AuthenticationAPIClient(auth0);
-            final SharedPreferencesStorage storage = new SharedPreferencesStorage(registrar.activeContext());
+            final SharedPreferencesStorage storage = new SharedPreferencesStorage(context);
 
-            _manager = new SecureCredentialsManager(registrar.activeContext(), apiClient, storage);
+            _manager = new SecureCredentialsManager(context, apiClient, storage);
         }
 
         return _manager;
@@ -63,7 +71,7 @@ public class CredentialsController implements MethodCallHandler {
 
         switch (methodCall.method) {
             case CredentialsMethodName.enableBioMetrics: {
-                registrar.addActivityResultListener(new PluginRegistry.ActivityResultListener() {
+                activityBinding.addActivityResultListener(new PluginRegistry.ActivityResultListener() {
                     @Override
                     public boolean onActivityResult(final int requestCode, final int resultCode, Intent intent) {
                         return manager.checkAuthenticationResult(requestCode, resultCode);
@@ -72,7 +80,7 @@ public class CredentialsController implements MethodCallHandler {
 
                 final String title = methodCall.argument("title");
 
-                final boolean success = manager.requireAuthentication(registrar.activity(), 11, title, null);
+                final boolean success = manager.requireAuthentication(activityBinding.getActivity(), 11, title, null);
 
                 result.success(success);
 
@@ -87,15 +95,17 @@ public class CredentialsController implements MethodCallHandler {
                 final String accessToken = (String) credentialsJSON.get("access_token");
                 final String type = (String) credentialsJSON.get("token_type");
                 final String refreshToken = (String) credentialsJSON.get("refresh_token");
-                final Integer expiresIn = (Integer) credentialsJSON.get("expires_in");
                 final String scope = (String) credentialsJSON.get("scope");
+                final Integer expiresIn = (Integer) credentialsJSON.get("expires_in");
 
-                Date expiresAt = null;
-                if (expiresIn != null) {
-                    expiresAt = new Date(System.currentTimeMillis() + expiresIn * 1000);
-                }
+                assert expiresIn != null;
+                assert idToken != null;
+                assert accessToken != null;
+                assert type != null;
 
-                Credentials credentials = new Credentials(idToken, accessToken, type, refreshToken, expiresAt, scope);
+                Date expiration = new Date(System.currentTimeMillis() + expiresIn * 1000);
+
+                Credentials credentials = new Credentials(idToken, accessToken, type, refreshToken, expiration, scope);
                 try {
                     manager.saveCredentials(credentials);
 
@@ -121,13 +131,13 @@ public class CredentialsController implements MethodCallHandler {
                 break;
             }
             case CredentialsMethodName.getCredentials: {
-                registrar.activity().runOnUiThread(new Runnable() {
+                mainHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        manager.getCredentials(new BaseCallback<Credentials, CredentialsManagerException>() {
+                        manager.getCredentials(new Callback<Credentials, CredentialsManagerException>() {
                             @Override
                             public void onSuccess(final Credentials payload) {
-                                registrar.activity().runOnUiThread(new Runnable() {
+                                mainHandler.post(new Runnable() {
                                     @Override
                                     public void run() {
                                         final HashMap<String, Object> obj = JSONHelpers.credentialsToJSON(payload);
@@ -137,8 +147,8 @@ public class CredentialsController implements MethodCallHandler {
                             }
 
                             @Override
-                            public void onFailure(final CredentialsManagerException error) {
-                                registrar.activity().runOnUiThread(new Runnable() {
+                            public void onFailure(@NonNull final CredentialsManagerException error) {
+                                mainHandler.post(new Runnable() {
                                     @Override
                                     public void run() {
                                         final Map<String, String> info = JSONHelpers.credentialsErrorToJSON(error);

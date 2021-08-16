@@ -19,9 +19,8 @@ class AuthenticationController: NSObject, FlutterPlugin {
         case startPhoneNumberPasswordless
         case loginEmailPasswordless
         case loginPhoneNumberPasswordless
-        case userInfoWithToken
         case userInfoWithAccessToken
-        case loginSocial
+        case loginFacebook
         case tokenExchangeWithParameters
         case tokenExchangeWithCode
         case appleTokenExchange
@@ -57,220 +56,209 @@ class AuthenticationController: NSObject, FlutterPlugin {
             }
             
             switch method {
-            case .login:
-                let params = try LoginWithUsernameOrEmailParameters.decode(data: data)
-                auth.login(usernameOrEmail: params.usernameOrEmail,
-                           password: params.password,
-                           realm: params.realm,
-                           audience: params.audience,
-                           scope: params.scope,
-                           parameters: params.parametersDict())
-                    .start { (authResult) in
-                        switch authResult {
-                        case .success(let credentials):
-                            sendResult(result, data: credentials.toJSON(), error: nil)
-                        case .failure(let error):
-                            sendResult(result, data: nil, error: CustomAuthenticationError(error as! AuthenticationError))
+                case .login:
+                    let params = try LoginWithUsernameOrEmailParameters.decode(data: data)
+                    auth.login(usernameOrEmail: params.usernameOrEmail,
+                               password: params.password,
+                               realm: params.realm,
+                               audience: params.audience,
+                               scope: params.scope,
+                               parameters: params.parametersDict())
+                        .start { (authResult) in
+                            switch authResult {
+                                case .success(let credentials):
+                                    sendResult(result, data: credentials.toJSON(), error: nil)
+                                case .failure(let error):
+                                    sendResult(result, data: nil, error: CustomAuthenticationError(error as! AuthenticationError))
+                            }
                         }
-                }
-                
-            case .loginWithOTP:
-                let params = try LoginWithOTPParameters.decode(data: data)
-                auth.login(withOTP: params.otp, mfaToken: params.mfaToken).start { (authResult) in
-                    switch authResult {
-                    case .success(let credentials):
-                        sendResult(result, data: credentials.toJSON(), error: nil)
-                    case .failure(let error):
-                        sendResult(result, data: nil, error: CustomAuthenticationError(error as! AuthenticationError))
-                    }
-                }
-                
-            case .loginDefaultDirectory:
-                let params = try LoginWithDefaultDirectoryParameters.decode(data: data)
-                auth.loginDefaultDirectory(withUsername: params.username,
-                                           password: params.password,
-                                           audience: params.audience,
-                                           scope: params.scope,
-                                           parameters: params.parametersDict())
-                    .start { (authResult) in
+                    
+                case .loginWithOTP:
+                    let params = try LoginWithOTPParameters.decode(data: data)
+                    auth.login(withOTP: params.otp, mfaToken: params.mfaToken).start { (authResult) in
                         switch authResult {
-                        case .success(let credentials):
-                            sendResult(result, data: credentials.toJSON(), error: nil)
-                        case .failure(let error):
-                            sendResult(result, data: nil, error: CustomAuthenticationError(error as! AuthenticationError))
+                            case .success(let credentials):
+                                sendResult(result, data: credentials.toJSON(), error: nil)
+                            case .failure(let error):
+                                sendResult(result, data: nil, error: CustomAuthenticationError(error as! AuthenticationError))
                         }
-                }
-                
-            case .createUser:
-                let params = try CreateUserParameters.decode(data: data)
-                auth.createUser(email: params.email,
-                                username: params.username,
-                                password: params.password,
-                                connection: params.connection,
-                                userMetadata: params.userMetadataDict(),
-                                rootAttributes: params.rootAttributesDict())
-                    .start { (authResult) in
+                    }
+                    
+                case .loginDefaultDirectory:
+                    let params = try LoginWithDefaultDirectoryParameters.decode(data: data)
+                    auth.loginDefaultDirectory(withUsername: params.username,
+                                               password: params.password,
+                                               audience: params.audience,
+                                               scope: params.scope,
+                                               parameters: params.parametersDict())
+                        .start { (authResult) in
+                            switch authResult {
+                                case .success(let credentials):
+                                    sendResult(result, data: credentials.toJSON(), error: nil)
+                                case .failure(let error):
+                                    sendResult(result, data: nil, error: CustomAuthenticationError(error as! AuthenticationError))
+                            }
+                        }
+                    
+                case .createUser:
+                    let params = try CreateUserParameters.decode(data: data)
+                    auth.createUser(email: params.email,
+                                    username: params.username,
+                                    password: params.password,
+                                    connection: params.connection,
+                                    userMetadata: params.userMetadataDict(),
+                                    rootAttributes: params.rootAttributesDict())
+                        .start { (authResult) in
+                            switch authResult {
+                                case .success(let user):
+                                    sendResult(result, data: databaseUserToJSON(user), error: nil)
+                                case .failure(let error):
+                                    sendResult(result, data: nil, error: CustomAuthenticationError(error as! AuthenticationError))
+                            }
+                        }
+                    
+                case .resetPassword:
+                    let params = try ResetPasswordParameters.decode(data: data)
+                    auth.resetPassword(email: params.email, connection: params.connection).start { (authResult) in
                         switch authResult {
-                        case .success(let user):
-                            sendResult(result, data: databaseUserToJSON(user), error: nil)
-                        case .failure(let error):
-                            sendResult(result, data: nil, error: CustomAuthenticationError(error as! AuthenticationError))
+                            case .success(_):
+                                sendResult(result, data: nil, error: nil)
+                            case .failure(let error):
+                                sendResult(result, data: nil, error: CustomAuthenticationError(error as! AuthenticationError))
                         }
-                }
-                
-            case .resetPassword:
-                let params = try ResetPasswordParameters.decode(data: data)
-                auth.resetPassword(email: params.email, connection: params.connection).start { (authResult) in
-                    switch authResult {
-                    case .success(_):
-                        sendResult(result, data: nil, error: nil)
-                    case .failure(let error):
-                        sendResult(result, data: nil, error: CustomAuthenticationError(error as! AuthenticationError))
                     }
-                }
-                
-            case .startEmailPasswordless:
-                let params = try StartEmailPasswordlessParameters.decode(data: data)
-                auth.startPasswordless(email: params.email, type: params.type, connection: params.connection, parameters: params.parametersDict()).start { (authResult) in
-                    switch authResult {
-                    case .success(_):
-                        sendResult(result, data: nil, error: nil)
-                    case .failure(let error):
-                        sendResult(result, data: nil, error: CustomAuthenticationError(error as! AuthenticationError))
+                    
+                case .startEmailPasswordless:
+                    let params = try StartEmailPasswordlessParameters.decode(data: data)
+                    auth.startPasswordless(email: params.email, type: params.type, connection: params.connection, parameters: params.parametersDict()).start { (authResult) in
+                        switch authResult {
+                            case .success(_):
+                                sendResult(result, data: nil, error: nil)
+                            case .failure(let error):
+                                sendResult(result, data: nil, error: CustomAuthenticationError(error as! AuthenticationError))
+                        }
                     }
-                }
-                
-            case .startPhoneNumberPasswordless:
-                let params = try StartPhoneNumberPasswordlessParameters.decode(data: data)
-                auth.startPasswordless(phoneNumber: params.phoneNumber, type: params.type, connection: params.connection).start { (authResult) in
-                    switch authResult {
-                    case .success(_):
-                        sendResult(result, data: nil, error: nil)
-                    case .failure(let error):
-                        sendResult(result, data: nil, error: CustomAuthenticationError(error as! AuthenticationError))
+                    
+                case .startPhoneNumberPasswordless:
+                    let params = try StartPhoneNumberPasswordlessParameters.decode(data: data)
+                    auth.startPasswordless(phoneNumber: params.phoneNumber, type: params.type, connection: params.connection).start { (authResult) in
+                        switch authResult {
+                            case .success(_):
+                                sendResult(result, data: nil, error: nil)
+                            case .failure(let error):
+                                sendResult(result, data: nil, error: CustomAuthenticationError(error as! AuthenticationError))
+                        }
                     }
-                }
-                
-            case .loginEmailPasswordless:
-                let params = try LoginEmailPasswordlessParameters.decode(data: data)
-                auth.login(email: params.email, code: params.code, audience: params.audience, scope: params.scope, parameters: params.parametersDict()).start { (authResult) in
-                    switch authResult {
-                    case .success(let credentials):
-                        sendResult(result, data: credentials.toJSON(), error: nil)
-                    case .failure(let error):
-                        sendResult(result, data: nil, error: CustomAuthenticationError(error as! AuthenticationError))
+                    
+                case .loginEmailPasswordless:
+                    let params = try LoginEmailPasswordlessParameters.decode(data: data)
+                    auth.login(email: params.email, code: params.code, audience: params.audience, scope: params.scope, parameters: params.parametersDict()).start { (authResult) in
+                        switch authResult {
+                            case .success(let credentials):
+                                sendResult(result, data: credentials.toJSON(), error: nil)
+                            case .failure(let error):
+                                sendResult(result, data: nil, error: CustomAuthenticationError(error as! AuthenticationError))
+                        }
                     }
-                }
-                
-            case .loginPhoneNumberPasswordless:
-                let params = try LoginPhoneNumberPasswordlessParameters.decode(data: data)
-                auth.login(phoneNumber: params.phoneNumber, code: params.code, audience: params.audience, scope: params.scope, parameters: params.parametersDict()).start { (authResult) in
-                    switch authResult {
-                    case .success(let credentials):
-                        sendResult(result, data: credentials.toJSON(), error: nil)
-                    case .failure(let error):
-                        sendResult(result, data: nil, error: CustomAuthenticationError(error as! AuthenticationError))
+                    
+                case .loginPhoneNumberPasswordless:
+                    let params = try LoginPhoneNumberPasswordlessParameters.decode(data: data)
+                    auth.login(phoneNumber: params.phoneNumber, code: params.code, audience: params.audience, scope: params.scope, parameters: params.parametersDict()).start { (authResult) in
+                        switch authResult {
+                            case .success(let credentials):
+                                sendResult(result, data: credentials.toJSON(), error: nil)
+                            case .failure(let error):
+                                sendResult(result, data: nil, error: CustomAuthenticationError(error as! AuthenticationError))
+                        }
                     }
-                }
-                
-            case .userInfoWithToken:
-                let params = try UserInfoWithTokenParameters.decode(data: data)
-                auth.userInfo(token: params.token).start { (authResult) in
-                    switch authResult {
-                    case .success(let profile):
-                        sendResult(result, data: profile.toJSON(), error: nil)
-                    case .failure(let error):
-                        sendResult(result, data: nil, error: CustomAuthenticationError(error as! AuthenticationError))
+                    
+                case .userInfoWithAccessToken:
+                    let params = try UserInfoWithAccessTokenParameters.decode(data: data)
+                    auth.userInfo(withAccessToken: params.accessToken).start { (authResult) in
+                        switch authResult {
+                            case .success(let userInfo):
+                                sendResult(result, data: userInfo.toJSON(), error: nil)
+                            case .failure(let error):
+                                sendResult(result, data: nil, error: CustomAuthenticationError(error as! AuthenticationError))
+                        }
                     }
-                }
-                
-            case .userInfoWithAccessToken:
-                let params = try UserInfoWithAccessTokenParameters.decode(data: data)
-                auth.userInfo(withAccessToken: params.accessToken).start { (authResult) in
-                    switch authResult {
-                    case .success(let userInfo):
-                        sendResult(result, data: userInfo.toJSON(), error: nil)
-                    case .failure(let error):
-                        sendResult(result, data: nil, error: CustomAuthenticationError(error as! AuthenticationError))
+                    
+                case .loginFacebook:
+                    let params = try LoginFacebookParameters.decode(data: data)
+                    auth.login(facebookSessionAccessToken: params.sessionAccessToken, profile: params.profileDict(), scope: params.scope, audience: params.audience).start { authResult in
+                        switch authResult {
+                            case .success(let credentials):
+                                sendResult(result, data: credentials.toJSON(), error: nil)
+                            case .failure(let error):
+                                sendResult(result, data: nil, error: CustomAuthenticationError(error as! AuthenticationError))
+                        }
                     }
-                }
-                
-            case .loginSocial:
-                let params = try LoginSocialParameters.decode(data: data)
-                auth.loginSocial(token: params.token, connection: params.connection, scope: params.scope, parameters: params.parametersDict()).start { (authResult) in
-                    switch authResult {
-                    case .success(let credentials):
-                        sendResult(result, data: credentials.toJSON(), error: nil)
-                    case .failure(let error):
-                        sendResult(result, data: nil, error: CustomAuthenticationError(error as! AuthenticationError))
+                    
+                case .tokenExchangeWithParameters:
+                    let params = try TokenExchangeWithParamsParameters.decode(data: data)
+                    auth.tokenExchange(withParameters: params.parametersDict()).start { (authResult) in
+                        switch authResult {
+                            case .success(let credentials):
+                                sendResult(result, data: credentials.toJSON(), error: nil)
+                            case .failure(let error):
+                                sendResult(result, data: nil, error: CustomAuthenticationError(error as! AuthenticationError))
+                        }
                     }
-                }
-                
-            case .tokenExchangeWithParameters:
-                let params = try TokenExchangeWithParamsParameters.decode(data: data)
-                auth.tokenExchange(withParameters: params.parametersDict()).start { (authResult) in
-                    switch authResult {
-                    case .success(let credentials):
-                        sendResult(result, data: credentials.toJSON(), error: nil)
-                    case .failure(let error):
-                        sendResult(result, data: nil, error: CustomAuthenticationError(error as! AuthenticationError))
+                    
+                case .tokenExchangeWithCode:
+                    let params = try TokenExchangeWithCodeParameters.decode(data: data)
+                    auth.tokenExchange(withCode: params.code, codeVerifier: params.code, redirectURI: params.redirectURI).start { (authResult) in
+                        switch authResult {
+                            case .success(let credentials):
+                                sendResult(result, data: credentials.toJSON(), error: nil)
+                            case .failure(let error):
+                                sendResult(result, data: nil, error: CustomAuthenticationError(error as! AuthenticationError))
+                        }
                     }
-                }
-                
-            case .tokenExchangeWithCode:
-                let params = try TokenExchangeWithCodeParameters.decode(data: data)
-                auth.tokenExchange(withCode: params.code, codeVerifier: params.code, redirectURI: params.redirectURI).start { (authResult) in
-                    switch authResult {
-                    case .success(let credentials):
-                        sendResult(result, data: credentials.toJSON(), error: nil)
-                    case .failure(let error):
-                        sendResult(result, data: nil, error: CustomAuthenticationError(error as! AuthenticationError))
+                    
+                case .appleTokenExchange:
+                    let params = try AppleTokenExchangeParameters.decode(data: data)
+                    auth.tokenExchange(withAppleAuthorizationCode: params.authCode, scope: params.scope, audience: params.audience).start { (authResult) in
+                        switch authResult {
+                            case .success(let credentials):
+                                sendResult(result, data: credentials.toJSON(), error: nil)
+                            case .failure(let error):
+                                sendResult(result, data: nil, error: CustomAuthenticationError(error as! AuthenticationError))
+                        }
                     }
-                }
-                
-            case .appleTokenExchange:
-                let params = try AppleTokenExchangeParameters.decode(data: data)
-                auth.tokenExchange(withAppleAuthorizationCode: params.authCode, scope: params.scope, audience: params.audience).start { (authResult) in
-                    switch authResult {
-                    case .success(let credentials):
-                        sendResult(result, data: credentials.toJSON(), error: nil)
-                    case .failure(let error):
-                        sendResult(result, data: nil, error: CustomAuthenticationError(error as! AuthenticationError))
+                    
+                case .renew:
+                    let params = try RenewParameters.decode(data: data)
+                    auth.renew(withRefreshToken: params.refreshToken, scope: params.scope).start { (authResult) in
+                        switch authResult {
+                            case .success(let credentials):
+                                sendResult(result, data: credentials.toJSON(), error: nil)
+                            case .failure(let error):
+                                sendResult(result, data: nil, error: CustomAuthenticationError(error as! AuthenticationError))
+                        }
                     }
-                }
-                
-            case .renew:
-                let params = try RenewParameters.decode(data: data)
-                auth.renew(withRefreshToken: params.refreshToken, scope: params.scope).start { (authResult) in
-                    switch authResult {
-                    case .success(let credentials):
-                        sendResult(result, data: credentials.toJSON(), error: nil)
-                    case .failure(let error):
-                        sendResult(result, data: nil, error: CustomAuthenticationError(error as! AuthenticationError))
+                    
+                case .revoke:
+                    let params = try RevokeParameters.decode(data: data)
+                    auth.revoke(refreshToken: params.refreshToken).start { (authResult) in
+                        switch authResult {
+                            case .success(_):
+                                sendResult(result, data: nil, error: nil)
+                            case .failure(let error):
+                                sendResult(result, data: nil, error: CustomAuthenticationError(error as! AuthenticationError))
+                        }
                     }
-                }
-                
-            case .revoke:
-                let params = try RevokeParameters.decode(data: data)
-                auth.revoke(refreshToken: params.refreshToken).start { (authResult) in
-                    switch authResult {
-                    case .success(_):
-                        sendResult(result, data: nil, error: nil)
-                    case .failure(let error):
-                        sendResult(result, data: nil, error: CustomAuthenticationError(error as! AuthenticationError))
+                    
+                case .delegation:
+                    let params = try DelegationParameters.decode(data: data)
+                    auth.delegation(withParameters: params.parametersDict()).start { (authResult) in
+                        switch authResult {
+                            case .success(let dict):
+                                sendResult(result, data: dict, error: nil)
+                            case .failure(let error):
+                                sendResult(result, data: nil, error: CustomAuthenticationError(error as! AuthenticationError))
+                        }
                     }
-                }
-                
-            case .delegation:
-                let params = try DelegationParameters.decode(data: data)
-                auth.delegation(withParameters: params.parametersDict()).start { (authResult) in
-                    switch authResult {
-                    case .success(let dict):
-                        sendResult(result, data: dict, error: nil)
-                    case .failure(let error):
-                        sendResult(result, data: nil, error: CustomAuthenticationError(error as! AuthenticationError))
-                    }
-                }
             }
         } catch {
             sendResult(result, data: nil, error: error)
@@ -379,22 +367,18 @@ private struct LoginEmailPasswordlessParameters: Decodable {
     }
 }
 
-private struct UserInfoWithTokenParameters: Decodable {
-    let token: String
-}
-
 private struct UserInfoWithAccessTokenParameters: Decodable {
     let accessToken: String
 }
 
-private struct LoginSocialParameters: Decodable {
-    let token: String
-    let connection: String
+private struct LoginFacebookParameters: Decodable {
+    let sessionAccessToken: String
+    private let profile: [String: AnyDecodable]
     let scope: String
-    private let parameters: [String: AnyDecodable]
+    let audience: String?
     
-    func parametersDict() -> [String: Any] {
-        return parameters.mapValues { $0.value }
+    func profileDict() -> [String: Any] {
+        return profile.mapValues { $0.value }
     }
 }
 
