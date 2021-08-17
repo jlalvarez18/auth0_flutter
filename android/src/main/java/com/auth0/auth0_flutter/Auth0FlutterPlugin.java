@@ -28,25 +28,25 @@ public class Auth0FlutterPlugin implements FlutterPlugin, ActivityAware {
 
   @Override
   public void onAttachedToActivity(@NonNull ActivityPluginBinding binding) {
-    credentialsController.activityBinding = binding;
-    webAuthController.activityBinding = binding;
+    credentialsController.setActivityBinding(binding);
+    webAuthController.setActivityBinding(binding);
   }
 
   @Override
   public void onDetachedFromActivityForConfigChanges() {
-    credentialsController.activityBinding = null;
-    webAuthController.activityBinding = null;
+    credentialsController.setActivityBinding(null);
+    webAuthController.setActivityBinding(null);
   }
 
   @Override
   public void onReattachedToActivityForConfigChanges(@NonNull ActivityPluginBinding binding) {
-    credentialsController.activityBinding = binding;
-    webAuthController.activityBinding = binding;
+    credentialsController.setActivityBinding(binding);
+    webAuthController.setActivityBinding(binding);
   }
 
   @Override
   public void onDetachedFromActivity() {
-    credentialsController.activityBinding = null;
-    webAuthController.activityBinding = null;
+    credentialsController.setActivityBinding(null);
+    webAuthController.setActivityBinding(null);
   }
 }

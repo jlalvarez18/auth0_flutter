@@ -5,6 +5,7 @@ import android.os.Handler;
 import android.os.Looper;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.auth0.android.Auth0;
 import com.auth0.android.Auth0Exception;
@@ -28,16 +29,15 @@ import io.flutter.plugin.common.PluginRegistry.Registrar;
 
 public class WebAuthController implements MethodCallHandler {
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
-    private final FlutterPluginBinding binding;
 
-    ActivityPluginBinding activityBinding;
+    private ActivityPluginBinding _activityBinding;
 
-    private WebAuthController(FlutterPluginBinding binding) {
-        this.binding = binding;
+    public void setActivityBinding(@Nullable ActivityPluginBinding activityBinding) {
+        this._activityBinding = activityBinding;
     }
 
-    static WebAuthController registerWith(FlutterPluginBinding binding) {
-        final WebAuthController controller = new WebAuthController(binding);
+    static WebAuthController registerWith(@NonNull FlutterPluginBinding binding) {
+        final WebAuthController controller = new WebAuthController();
         final MethodChannel channel = new MethodChannel(binding.getBinaryMessenger(), "plugins.auth0_flutter.io/web_auth");
 
         channel.setMethodCallHandler(controller);
@@ -59,7 +59,7 @@ public class WebAuthController implements MethodCallHandler {
             case WebAuthMethodName.start: {
                 final WebAuthProvider.Builder webAuth = webAuth(auth0, methodCall);
 
-                webAuth.start(activityBinding.getActivity(), new Callback<Credentials, AuthenticationException>() {
+                webAuth.start(_activityBinding.getActivity(), new Callback<Credentials, AuthenticationException>() {
                     @Override
                     public void onSuccess(Credentials credentials) {
                         final HashMap<String, Object> obj = JSONHelpers.credentialsToJSON(credentials);
@@ -96,7 +96,7 @@ public class WebAuthController implements MethodCallHandler {
                     builder.withScheme(scheme);
                 }
 
-                builder.start(binding.getApplicationContext(), new Callback<Void, AuthenticationException>() {
+                builder.start(_activityBinding.getActivity(), new Callback<Void, AuthenticationException>() {
                     @Override
                     public void onSuccess(Void unused) {
                         mainHandler.post(new Runnable() {

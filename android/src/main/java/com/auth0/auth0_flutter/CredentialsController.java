@@ -1,12 +1,12 @@
 package com.auth0.auth0_flutter;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.auth0.android.Auth0;
 import com.auth0.android.authentication.AuthenticationAPIClient;
@@ -31,9 +31,11 @@ import io.flutter.plugin.common.PluginRegistry;
 public class CredentialsController implements MethodCallHandler {
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
-    ActivityPluginBinding activityBinding;
+    private @Nullable ActivityPluginBinding _activityBinding;
 
-    private SecureCredentialsManager _manager;
+    public void setActivityBinding(@Nullable ActivityPluginBinding binding) {
+        this._activityBinding = binding;
+    }
 
     static CredentialsController registerWith(FlutterPlugin.FlutterPluginBinding binding) {
         final CredentialsController controller = new CredentialsController();
@@ -44,34 +46,22 @@ public class CredentialsController implements MethodCallHandler {
         return controller;
     }
 
-    private SecureCredentialsManager getCredentialsManager(MethodCall methodCall) {
-        if (_manager == null) {
-            final String clientId = methodCall.argument("clientId");
-            final String domain = methodCall.argument("domain");
-
-            assert clientId != null;
-            assert domain != null;
-
-            final Auth0 auth0 = new Auth0(clientId, domain);
-
-            final Context context = activityBinding.getActivity();
-
-            final AuthenticationAPIClient apiClient = new AuthenticationAPIClient(auth0);
-            final SharedPreferencesStorage storage = new SharedPreferencesStorage(context);
-
-            _manager = new SecureCredentialsManager(context, apiClient, storage);
-        }
-
-        return _manager;
-    }
-
     @Override
     public void onMethodCall(@NonNull MethodCall methodCall, @NonNull final Result result) {
-        final SecureCredentialsManager manager = getCredentialsManager(methodCall);
+        if (_activityBinding == null) {
+            result.error("", "Missing activity.", null);
+            return;
+        }
+
+        final SecureCredentialsManager manager = getCredentialsManager(methodCall, _activityBinding);
 
         switch (methodCall.method) {
             case CredentialsMethodName.enableBioMetrics: {
-                activityBinding.addActivityResultListener(new PluginRegistry.ActivityResultListener() {
+                final Integer requestCode = methodCall.argument("requestCode");
+
+                assert requestCode != null;
+
+                _activityBinding.addActivityResultListener(new PluginRegistry.ActivityResultListener() {
                     @Override
                     public boolean onActivityResult(final int requestCode, final int resultCode, Intent intent) {
                         return manager.checkAuthenticationResult(requestCode, resultCode);
@@ -79,8 +69,9 @@ public class CredentialsController implements MethodCallHandler {
                 });
 
                 final String title = methodCall.argument("title");
+                final String description = methodCall.argument("description");
 
-                final boolean success = manager.requireAuthentication(activityBinding.getActivity(), 11, title, null);
+                final boolean success = manager.requireAuthentication(_activityBinding.getActivity(), requestCode, title, description);
 
                 result.success(success);
 
@@ -164,6 +155,23 @@ public class CredentialsController implements MethodCallHandler {
             default:
                 result.notImplemented();
         }
+    }
+
+    private static SecureCredentialsManager getCredentialsManager(@NonNull MethodCall methodCall, @NonNull ActivityPluginBinding binding) {
+        final String clientId = methodCall.argument("clientId");
+        final String domain = methodCall.argument("domain");
+
+        assert clientId != null;
+        assert domain != null;
+
+        final Auth0 auth0 = new Auth0(clientId, domain);
+
+        final Context context = binding.getActivity();
+
+        final AuthenticationAPIClient apiClient = new AuthenticationAPIClient(auth0);
+        final SharedPreferencesStorage storage = new SharedPreferencesStorage(context);
+
+        return new SecureCredentialsManager(context, apiClient, storage);
     }
 }
 

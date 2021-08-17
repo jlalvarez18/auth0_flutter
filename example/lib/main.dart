@@ -57,9 +57,20 @@ class _MyAppState extends State<MyApp> {
 
       _auth0 = Auth0(clientId: clientId, domain: domain);
       _credManager = _auth0.credentialsManager();
-      _webAuth = _auth0.webAuth().audience(audience).scope('openid email offline_access');
+      _webAuth = _auth0
+          .webAuth()
+          .audience(audience)
+          .scope('openid email offline_access');
 
-      await _credManager.enableBiometrics(title: "Secure all the things");
+      final options = BiometricsOptions(
+        android: AndroidBiometricsOptions(requestCode: 123),
+        ios: IOSBiometricsOptions(cancelTitle: 'Cancel'),
+      );
+
+      await _credManager.enableBiometrics(
+        title: "Secure all the things",
+        options: options,
+      );
 
       creds = await _credManager.getCredentials();
       _credentialsStored = await _credManager.hasValidCredentials();
@@ -106,7 +117,9 @@ class _MyAppState extends State<MyApp> {
                   Text(_credentials.accessToken),
                   FlatButton(
                     color: Colors.blueGrey,
-                    child: Text(_credentialsStored ? 'Clear Credentials' : 'Store Credentials'),
+                    child: Text(_credentialsStored
+                        ? 'Clear Credentials'
+                        : 'Store Credentials'),
                     onPressed: () async {
                       if (_credentialsStored) {
                         await _credManager.clearCredentials();
@@ -116,7 +129,8 @@ class _MyAppState extends State<MyApp> {
                         await _credManager.storeCredentials(_credentials);
                       }
 
-                      _credentialsStored = await _credManager.hasValidCredentials();
+                      _credentialsStored =
+                          await _credManager.hasValidCredentials();
 
                       setState(() {});
                     },
