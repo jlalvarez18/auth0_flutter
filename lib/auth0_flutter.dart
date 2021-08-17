@@ -1,6 +1,7 @@
 library auth0_flutter;
 
 import 'dart:async';
+import 'dart:io';
 
 import 'package:auth0_flutter/src/channel_methods.dart';
 import 'package:auth0_flutter/src/identity.dart';
