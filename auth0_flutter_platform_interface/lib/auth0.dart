@@ -9,9 +9,19 @@ import 'src/users/users_platform_interface.dart';
 import 'src/web_auth/web_auth_method_channel.dart';
 import 'src/web_auth/web_auth_platform_interface.dart';
 
+export 'src/authentication/authentication_error.dart';
 export 'src/authentication/authentication_platform_interface.dart';
+export 'src/authentication/database_user.dart';
+export 'src/authentication/identity.dart';
+export 'src/authentication/profile.dart';
+export 'src/authentication/user_info.dart';
+export 'src/credentials/credentials.dart';
+export 'src/credentials/credentials_error.dart';
 export 'src/credentials/credentials_manager_platform_interface.dart';
+export 'src/users/user_patch_attributes.dart';
+export 'src/users/users_error.dart';
 export 'src/users/users_platform_interface.dart';
+export 'src/web_auth/web_auth_error.dart';
 export 'src/web_auth/web_auth_platform_interface.dart';
 
 class Auth0Platform extends PlatformInterface {
