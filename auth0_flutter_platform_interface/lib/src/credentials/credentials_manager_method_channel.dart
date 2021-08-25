@@ -9,13 +9,13 @@ import 'credentials_manager_platform_interface.dart';
 const _channel =
     const MethodChannel('plugins.auth0_flutter.io/credentials_manager');
 
-class CredentialsManager extends CredentialsManagerPlatform {
+class CredentialsManagerMethodChannel extends CredentialsManagerPlatform {
   CredentialsManagerError _errorHandler(PlatformException e) =>
       CredentialsManagerError.from(e);
 
   final String? storeKey;
 
-  CredentialsManager({
+  CredentialsManagerMethodChannel({
     required String clientId,
     required String domain,
     this.storeKey,

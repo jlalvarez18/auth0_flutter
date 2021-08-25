@@ -15,50 +15,76 @@ abstract class WebAuthPlatform extends PlatformInterface {
   static final Object _token = Object();
 
   /// Turn on/off Auth0.swift debug logging of HTTP requests and OAuth2 flow (iOS only).
-  WebAuthPlatform logging({required bool enabled});
+  WebAuthPlatform logging({required bool enabled}) {
+    throw UnimplementedError('logging() has not been implemented.');
+  }
 
   /// For redirect url instead of a custom scheme it will use `https` and iOS 9 Universal Links.
   /// Before enabling this flag you'll need to configure Universal Links
-  WebAuthPlatform useUniversalLink();
+  WebAuthPlatform useUniversalLink() {
+    throw UnimplementedError('useUniversalLink() has not been implemented.');
+  }
 
   // Specify a custom Scheme to use on the Callback Uri. Default scheme is 'https'
   // Used for Android client.
   // No-op on iOS
-  WebAuthPlatform scheme(String value);
+  WebAuthPlatform scheme(String value) {
+    throw UnimplementedError('scheme() has not been implemented.');
+  }
 
   /// Specify a connection name to be used to authenticate.
   /// By default no connection is specified, so the hosted login page will be displayed
-  WebAuthPlatform connection(String value);
+  WebAuthPlatform connection(String value) {
+    throw UnimplementedError('connection() has not been implemented.');
+  }
 
   /// Scopes that will be requested during auth
   /// a scope value like: `openid email`
-  WebAuthPlatform scope(String value);
+  WebAuthPlatform scope(String value) {
+    throw UnimplementedError('scope() has not been implemented.');
+  }
 
   /// Provider scopes for oauth2/social connections. e.g. Facebook, Google etc
   /// oauth2/social comma separated scope list: `user_friends,email`
-  WebAuthPlatform connectionScope(String value);
+  WebAuthPlatform connectionScope(String value) {
+    throw UnimplementedError('connectionScope() has not been implemented.');
+  }
 
   /// State value that will be echoed after authentication
   /// in order to check that the response is from your request and not other.
   /// By default a random value is used.
-  WebAuthPlatform state(String value);
+  WebAuthPlatform state(String value) {
+    throw UnimplementedError('state() has not been implemented.');
+  }
 
   /// Send additional parameters for authentication.
-  WebAuthPlatform parameters(Map<String, String> value);
+  WebAuthPlatform parameters(Map<String, String> value) {
+    throw UnimplementedError('parameters() has not been implemented.');
+  }
 
   /// Setup the response types to be used for authentication
   /// No longer used in Android v2 SDK
-  WebAuthPlatform responseType(List<ResponseType> value);
+  WebAuthPlatform responseType(List<ResponseType> value) {
+    throw UnimplementedError('responseType() has not been implemented.');
+  }
 
   /// Add nonce paramater for authentication, this is a requirement for
   /// when response type .id_token is specified.
-  WebAuthPlatform nonce(String value);
+  WebAuthPlatform nonce(String value) {
+    throw UnimplementedError('nonce() has not been implemented.');
+  }
 
   ///  Audience name of the API that your application will call using the `access_token` returned after Auth.
   ///  This value must match the one defined in Auth0 Dashboard [APIs Section](https://manage.auth0.com/#/apis)
-  WebAuthPlatform audience(String value);
+  WebAuthPlatform audience(String value) {
+    throw UnimplementedError('audience() has not been implemented.');
+  }
 
-  Future<Credentials> start();
+  Future<Credentials> start() {
+    throw UnimplementedError('start() has not been implemented.');
+  }
 
-  Future<bool> clearSession(bool federated);
+  Future<bool> clearSession(bool federated) {
+    throw UnimplementedError('clearSession() has not been implemented.');
+  }
 }

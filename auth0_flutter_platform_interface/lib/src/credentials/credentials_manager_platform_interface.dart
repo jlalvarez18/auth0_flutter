@@ -16,15 +16,27 @@ abstract class CredentialsManagerPlatform extends PlatformInterface {
   Future<bool> enableBiometrics({
     required String title,
     required Map<String, dynamic> options,
-  });
+  }) {
+    throw UnimplementedError('enableBiometrics() has not been implemented.');
+  }
 
-  Future<bool> storeCredentials(Credentials credentials);
+  Future<bool> storeCredentials(Credentials credentials) {
+    throw UnimplementedError('storeCredentials() has not been implemented.');
+  }
 
-  Future<bool> clearCredentials();
+  Future<bool> clearCredentials() {
+    throw UnimplementedError('clearCredentials() has not been implemented.');
+  }
 
-  Future<bool> revokeCredentials();
+  Future<bool> revokeCredentials() {
+    throw UnimplementedError('revokeCredentials() has not been implemented.');
+  }
 
-  Future<bool> hasValidCredentials();
+  Future<bool> hasValidCredentials() {
+    throw UnimplementedError('hasValidCredentials() has not been implemented.');
+  }
 
-  Future<Credentials?> getCredentials({String? scope});
+  Future<Credentials?> getCredentials({String? scope}) {
+    throw UnimplementedError('getCredentials() has not been implemented.');
+  }
 }
