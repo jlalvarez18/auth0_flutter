@@ -18,35 +18,13 @@ class Auth0Platform extends PlatformInterface {
   final String clientId;
   final String domain;
 
-  Auth0Platform._({required this.clientId, required this.domain})
+  Auth0Platform({required this.clientId, required this.domain})
       : super(token: _token);
 
   static final Object _token = Object();
 
-  static Auth0Platform? _instance;
-
-  static Auth0Platform get instance {
-    if (_instance != null) {
-      return _instance!;
-    }
-
-    throw AssertionError(
-        'You must call Auth0.initialize() before calling Auth0Platform.instance');
-  }
-
-  static set instance(Auth0Platform instance) {
+  static void verifyExtends(Auth0Platform instance) {
     PlatformInterface.verifyToken(instance, _token);
-
-    _instance = instance;
-  }
-
-  static Auth0Platform initialize({
-    required String clientId,
-    required String domain,
-  }) {
-    _instance = Auth0Platform._(clientId: clientId, domain: domain);
-
-    return _instance!;
   }
 
   /// The default instance of [WebAuthPlatform] to use.
