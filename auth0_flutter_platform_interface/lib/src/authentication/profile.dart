@@ -1,4 +1,5 @@
-part of auth0_flutter;
+import '../utils/date.dart';
+import 'identity.dart';
 
 class Profile {
   final String id;

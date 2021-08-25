@@ -1,5 +1,3 @@
-part of auth0_flutter;
-
 class DatabaseUser {
   final String? email;
   final String? username;

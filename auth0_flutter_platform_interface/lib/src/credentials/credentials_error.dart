@@ -1,6 +1,13 @@
-part of auth0_flutter;
+import 'package:flutter/services.dart';
 
-enum CredentialErrorType { noCredentials, noRefreshToken, failedRefresh, touchFailed, revokeFailed, unknown }
+enum CredentialErrorType {
+  noCredentials,
+  noRefreshToken,
+  failedRefresh,
+  touchFailed,
+  revokeFailed,
+  unknown
+}
 
 final _hash = <String, CredentialErrorType>{
   'no_credentials': CredentialErrorType.noCredentials,

@@ -1,4 +1,4 @@
-part of auth0_flutter;
+import 'package:flutter/services.dart';
 
 enum WebAuthErrorType {
   noBundleIdentifierFound,
@@ -26,7 +26,9 @@ class WebAuthError implements Exception {
   factory WebAuthError.from(PlatformException e) {
     final Map<String, dynamic> details = Map.castFrom(e.details);
 
-    return WebAuthError(type: _webAuthTypeFrom(details["type"]), description: details["description"]);
+    return WebAuthError(
+        type: _webAuthTypeFrom(details["type"]),
+        description: details["description"]);
   }
 }
 

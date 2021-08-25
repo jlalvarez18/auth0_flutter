@@ -1,4 +1,4 @@
-part of auth0_flutter;
+import 'package:flutter/services.dart';
 
 class UsersError implements Exception {
   final String? code;

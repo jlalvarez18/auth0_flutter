@@ -1,34 +1,37 @@
-part of auth0_flutter;
+import 'package:flutter/services.dart';
 
-class CredentialsManager {
-  static const _channel =
-      const MethodChannel('plugins.auth0_flutter.io/credentials_manager');
+import '../utils/channel_helper.dart';
+import '../utils/channel_methods.dart';
+import 'credentials.dart';
+import 'credentials_error.dart';
+import 'credentials_manager_platform_interface.dart';
 
-  final Map<String, dynamic> _parameters;
+const _channel =
+    const MethodChannel('plugins.auth0_flutter.io/credentials_manager');
 
+class CredentialsManager extends CredentialsManagerPlatform {
   CredentialsManagerError _errorHandler(PlatformException e) =>
       CredentialsManagerError.from(e);
+
+  final String? storeKey;
 
   CredentialsManager({
     required String clientId,
     required String domain,
-    String? storeKey,
-  }) : _parameters = {
-          'clientId': clientId,
-          'domain': domain,
-          'storeKey': storeKey
-        };
+    this.storeKey,
+  }) : super(clientId: clientId, domain: domain);
 
   /// Enables biometrics (fingerprint, faceId, etc)
   ///
   /// Returns a [Future] which completes with a boolean indicating success
+  @override
   Future<bool> enableBiometrics({
     required String title,
-    required BiometricsOptions options,
+    required Map<String, dynamic> options,
   }) async {
-    final args = Map.fromEntries(_parameters.entries);
+    final args = _generateArguments();
     args['title'] = title;
-    args.addEntries(options.toMap().entries);
+    args.addEntries(options.entries);
 
     final success = await invokeMethod<bool>(
       channel: _channel,
@@ -40,8 +43,9 @@ class CredentialsManager {
     return success ?? false;
   }
 
+  @override
   Future<bool> storeCredentials(Credentials credentials) async {
-    final args = Map.fromEntries(_parameters.entries);
+    final args = _generateArguments();
     args['credentials'] = credentials.toJSON();
 
     final result = await invokeMethod<bool>(
@@ -54,8 +58,9 @@ class CredentialsManager {
     return result ?? false;
   }
 
+  @override
   Future<bool> clearCredentials() async {
-    final args = Map.fromEntries(_parameters.entries);
+    final args = _generateArguments();
 
     final result = await invokeMethod<bool>(
       channel: _channel,
@@ -67,6 +72,7 @@ class CredentialsManager {
     return result ?? false;
   }
 
+  @override
   Future<bool> revokeCredentials() async {
     final result = await invokeMethod<bool>(
       channel: _channel,
@@ -78,8 +84,9 @@ class CredentialsManager {
     return result ?? false;
   }
 
+  @override
   Future<bool> hasValidCredentials() async {
-    final args = Map.fromEntries(_parameters.entries);
+    final args = _generateArguments();
 
     final result = await invokeMethod<bool>(
       channel: _channel,
@@ -91,8 +98,9 @@ class CredentialsManager {
     return result ?? false;
   }
 
+  @override
   Future<Credentials?> getCredentials({String? scope}) async {
-    final args = Map.fromEntries(_parameters.entries);
+    final args = _generateArguments();
     args['scope'] = scope;
 
     final result = await invokeMapMethod<String, dynamic>(
@@ -116,69 +124,12 @@ class CredentialsManager {
 
     return null;
   }
-}
 
-class BiometricsOptions {
-  final IOSBiometricsOptions? _ios;
-  final AndroidBiometricsOptions _android;
-
-  BiometricsOptions({
-    required AndroidBiometricsOptions android,
-    IOSBiometricsOptions? ios,
-  })  : _android = android,
-        _ios = ios;
-
-  Map<String, dynamic> toMap() {
-    final Map<String, dynamic> map = {};
-
-    if (Platform.isIOS) {
-      final iosMap = _ios?.toMap();
-      if (iosMap != null) {
-        map.addAll(iosMap);
-      }
-    }
-
-    if (Platform.isAndroid) {
-      map.addAll(_android.toMap());
-    }
-
-    return map;
-  }
-}
-
-class IOSBiometricsOptions {
-  final String? cancelTitle;
-  final String? fallbackTitle;
-
-  IOSBiometricsOptions({
-    this.cancelTitle,
-    this.fallbackTitle,
-  });
-
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> _generateArguments() {
     return {
-      'cancelTitle': cancelTitle,
-      'fallbackTitle': fallbackTitle,
-    };
-  }
-}
-
-class AndroidBiometricsOptions {
-  /// Must be a valid number between 1 an 255
-  final int requestCode;
-
-  /// the text to use as description in the authentication screen. On some Android versions it might not be shown. Passing null will result in using the OS's default value.
-  final String? description;
-
-  AndroidBiometricsOptions({
-    required this.requestCode,
-    this.description,
-  }) : assert(requestCode >= 1 && requestCode <= 255);
-
-  Map<String, dynamic> toMap() {
-    return {
-      'description': description,
-      'requestCode': requestCode,
+      'clientId': clientId,
+      'domain': domain,
+      'storeKey': storeKey,
     };
   }
 }

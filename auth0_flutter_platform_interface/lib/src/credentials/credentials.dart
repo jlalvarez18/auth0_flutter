@@ -1,5 +1,3 @@
-part of auth0_flutter;
-
 class Credentials {
   final String? accessToken;
   final String? tokenType;

@@ -1,5 +1,3 @@
-part of auth0_flutter;
-
 DateTime? dateFromString(String value) {
   final intValue = int.tryParse(value);
   if (intValue != null) {

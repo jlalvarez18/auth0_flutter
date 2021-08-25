@@ -47,7 +47,8 @@ class Identity {
     final expiresInSeconds = json['expires_in'];
 
     if (expiresInSeconds is int) {
-      expiresIn = DateTime.fromMillisecondsSinceEpoch(expiresInSeconds * Duration.millisecondsPerSecond);
+      expiresIn = DateTime.fromMillisecondsSinceEpoch(
+          expiresInSeconds * Duration.millisecondsPerSecond);
     } else {
       expiresIn = null;
     }

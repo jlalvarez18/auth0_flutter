@@ -1,4 +1,4 @@
-part of auth0_flutter;
+import '../utils/date.dart';
 
 class UserInfo {
   static List<String> publicClaims = [
