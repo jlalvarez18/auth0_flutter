@@ -1,17 +1,33 @@
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
-import 'credentials.dart';
+import '../models/auth0_app.dart';
+import '../models/credentials.dart';
 
 abstract class CredentialsManagerPlatform extends PlatformInterface {
-  final String clientId;
-  final String domain;
+  final String? storeKey;
+  final Auth0App app;
 
-  CredentialsManagerPlatform({
-    required this.clientId,
-    required this.domain,
-  }) : super(token: _token);
+  CredentialsManagerPlatform({required this.app, this.storeKey})
+      : super(token: _token);
 
   static final Object _token = Object();
+
+  static CredentialsManagerPlatform? _instance;
+
+  static CredentialsManagerPlatform get instance {
+    if (_instance != null) {
+      return _instance!;
+    }
+
+    throw AssertionError(
+        'CredentialsManagerPlatform.instance has not been set.');
+  }
+
+  static set instance(CredentialsManagerPlatform instance) {
+    PlatformInterface.verifyToken(instance, _token);
+
+    _instance = instance;
+  }
 
   Future<bool> enableBiometrics({
     required String title,

@@ -1,10 +1,11 @@
 import 'package:flutter/services.dart';
 
+import '../errors/credentials_error.dart';
+import '../models/auth0_app.dart';
+import '../models/credentials.dart';
+import '../platform_interface/credentials_manager_platform_interface.dart';
 import '../utils/channel_helper.dart';
 import '../utils/channel_methods.dart';
-import 'credentials.dart';
-import 'credentials_error.dart';
-import 'credentials_manager_platform_interface.dart';
 
 const _channel =
     const MethodChannel('plugins.auth0_flutter.io/credentials_manager');
@@ -13,13 +14,8 @@ class CredentialsManagerMethodChannel extends CredentialsManagerPlatform {
   CredentialsManagerError _errorHandler(PlatformException e) =>
       CredentialsManagerError.from(e);
 
-  final String? storeKey;
-
-  CredentialsManagerMethodChannel({
-    required String clientId,
-    required String domain,
-    this.storeKey,
-  }) : super(clientId: clientId, domain: domain);
+  CredentialsManagerMethodChannel({required Auth0App app, String? storeKey})
+      : super(app: app, storeKey: storeKey);
 
   /// Enables biometrics (fingerprint, faceId, etc)
   ///
@@ -127,8 +123,8 @@ class CredentialsManagerMethodChannel extends CredentialsManagerPlatform {
 
   Map<String, dynamic> _generateArguments() {
     return {
-      'clientId': clientId,
-      'domain': domain,
+      'clientId': app.clientId,
+      'domain': app.domain,
       'storeKey': storeKey,
     };
   }

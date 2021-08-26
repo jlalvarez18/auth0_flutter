@@ -1,22 +1,20 @@
 import 'package:flutter/services.dart';
 
-import '../credentials/credentials.dart';
+import '../errors/authentication_error.dart';
+import '../models/auth0_app.dart';
+import '../models/credentials.dart';
+import '../models/database_user.dart';
+import '../models/profile.dart';
+import '../models/user_info.dart';
+import '../platform_interface/authentication_platform_interface.dart';
 import '../utils/channel_helper.dart';
 import '../utils/channel_methods.dart';
-import '../web_auth/web_auth_method_channel.dart';
-import 'authentication_error.dart';
-import 'authentication_platform_interface.dart';
-import 'database_user.dart';
-import 'profile.dart';
-import 'user_info.dart';
+import 'web_auth_method_channel.dart';
 
 const _channel = const MethodChannel('plugins.auth0_flutter.io/authentication');
 
 class AuthenticationMethodChannel extends AuthenticationPlatform {
-  AuthenticationMethodChannel({
-    required String clientId,
-    required String domain,
-  }) : super(clientId: clientId, domain: domain);
+  AuthenticationMethodChannel({required Auth0App app}) : super(app: app);
 
   AuthenticationError _errorHandler(PlatformException e) =>
       AuthenticationError.from(e);
@@ -370,14 +368,13 @@ class AuthenticationMethodChannel extends AuthenticationPlatform {
 
   @override
   WebAuthMethodChannel webAuthWithConnection(String connection) {
-    return WebAuthMethodChannel(clientId: clientId, domain: domain)
-        .connection(connection);
+    return WebAuthMethodChannel(app: app).connection(connection);
   }
 
   Map<String, dynamic> _generateArguments(Map<String, dynamic>? other) {
     final args = <String, dynamic>{
-      'clientId': clientId,
-      'domain': domain,
+      'clientId': app.clientId,
+      'domain': app.domain,
       'loggingEnabled': _loggingEnabled,
     };
 

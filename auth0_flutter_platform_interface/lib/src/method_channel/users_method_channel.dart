@@ -1,20 +1,19 @@
 import 'package:flutter/services.dart';
 
+import '../errors/users_error.dart';
+import '../models/auth0_app.dart';
+import '../models/user_patch_attributes.dart';
+import '../platform_interface/users_platform_interface.dart';
 import '../utils/channel_helper.dart';
 import '../utils/channel_methods.dart';
-import 'user_patch_attributes.dart';
-import 'users_error.dart';
-import 'users_platform_interface.dart';
 
 const _channel = MethodChannel('plugins.auth0_flutter.io/users');
 
 class UsersMethodChannel extends UsersPlatform {
   UsersError _errorHandler(PlatformException e) => UsersError.from(e);
 
-  UsersMethodChannel({
-    required String token,
-    required String domain,
-  }) : super(domain: domain, token: token);
+  UsersMethodChannel({required String token, required Auth0App app})
+      : super(token: token, app: app);
 
   @override
   Future<Map<String, dynamic>?> get({
@@ -147,7 +146,7 @@ class UsersMethodChannel extends UsersPlatform {
   Map<String, dynamic> _generateArguments(Map<String, dynamic>? other) {
     final args = <String, dynamic>{
       'token': token,
-      'domain': domain,
+      'domain': app.domain,
     };
 
     if (other != null) {

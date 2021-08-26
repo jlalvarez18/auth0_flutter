@@ -1,16 +1,16 @@
 import 'package:flutter/services.dart';
 
-import '../credentials/credentials.dart';
+import '../../auth0_platform_interface.dart';
+import '../errors/web_auth_error.dart';
+import '../models/credentials.dart';
+import '../platform_interface/web_auth_platform_interface.dart';
 import '../utils/channel_helper.dart';
 import '../utils/channel_methods.dart';
-import 'web_auth_error.dart';
-import 'web_auth_platform_interface.dart';
 
 const _channel = const MethodChannel('plugins.auth0_flutter.io/web_auth');
 
 class WebAuthMethodChannel extends WebAuthPlatform {
-  WebAuthMethodChannel({required String clientId, required String domain})
-      : super(clientId: clientId, domain: domain);
+  WebAuthMethodChannel({required Auth0App app}) : super(app: app);
 
   WebAuthError _errorHandler(PlatformException e) => WebAuthError.from(e);
 
@@ -105,8 +105,8 @@ class WebAuthMethodChannel extends WebAuthPlatform {
 
   Future<Credentials> start() async {
     final args = <String, dynamic>{
-      'clientId': clientId,
-      'domain': domain,
+      'clientId': app.clientId,
+      'domain': app.domain,
       'universalLink': _universalLink,
       'responseType':
           _responseType.map((v) => _responseTypeToString(v)).toList(),
@@ -117,10 +117,11 @@ class WebAuthMethodChannel extends WebAuthPlatform {
     };
 
     final json = await invokeMapMethod<String, dynamic>(
-        channel: _channel,
-        method: WebAuthMethod.start,
-        arguments: args,
-        exceptionHandler: _errorHandler);
+      channel: _channel,
+      method: WebAuthMethod.start,
+      arguments: args,
+      exceptionHandler: _errorHandler,
+    );
 
     if (json == null) {
       throw Exception('Unknown Error');
@@ -131,18 +132,19 @@ class WebAuthMethodChannel extends WebAuthPlatform {
 
   Future<bool> clearSession(bool federated) async {
     final arguments = <String, dynamic>{
-      'clientId': clientId,
-      'domain': domain,
+      'clientId': app.clientId,
+      'domain': app.domain,
       'universalLink': _universalLink,
       'federated': federated,
       'scheme': _scheme
     };
 
     final result = await invokeMethod<bool>(
-        channel: _channel,
-        method: WebAuthMethod.clearSession,
-        arguments: arguments,
-        exceptionHandler: _errorHandler);
+      channel: _channel,
+      method: WebAuthMethod.clearSession,
+      arguments: arguments,
+      exceptionHandler: _errorHandler,
+    );
 
     return result ?? false;
   }

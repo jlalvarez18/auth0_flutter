@@ -1,17 +1,32 @@
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
-import 'user_patch_attributes.dart';
+import '../models/auth0_app.dart';
+import '../models/user_patch_attributes.dart';
 
 abstract class UsersPlatform extends PlatformInterface {
   final String token;
-  final String domain;
+  final Auth0App app;
 
-  UsersPlatform({
-    required this.token,
-    required this.domain,
-  }) : super(token: _token);
+  UsersPlatform({required this.token, required this.app})
+      : super(token: _token);
 
   static final Object _token = Object();
+
+  static UsersPlatform? _instance;
+
+  static UsersPlatform get instance {
+    if (_instance != null) {
+      return _instance!;
+    }
+
+    throw AssertionError('UsersPlatform.instance has not been set.');
+  }
+
+  static set instance(UsersPlatform instance) {
+    PlatformInterface.verifyToken(instance, _token);
+
+    _instance = instance;
+  }
 
   Future<Map<String, dynamic>?> get({
     required String identifier,

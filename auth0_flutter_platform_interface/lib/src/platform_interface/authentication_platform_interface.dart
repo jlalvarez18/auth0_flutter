@@ -1,24 +1,37 @@
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
-import '../credentials/credentials.dart';
-import '../web_auth/web_auth_platform_interface.dart';
-import 'database_user.dart';
-import 'profile.dart';
-import 'user_info.dart';
+import '../models/auth0_app.dart';
+import '../models/credentials.dart';
+import '../models/database_user.dart';
+import '../models/profile.dart';
+import '../models/user_info.dart';
+import '../platform_interface/web_auth_platform_interface.dart';
 
 // String types code, link, link_ios, link_android
 enum PasswordlessType { code, link, iosLink, androidLink }
 
 abstract class AuthenticationPlatform extends PlatformInterface {
-  final String clientId;
-  final String domain;
+  final Auth0App app;
 
-  AuthenticationPlatform({
-    required this.clientId,
-    required this.domain,
-  }) : super(token: _token);
+  AuthenticationPlatform({required this.app}) : super(token: _token);
 
   static final Object _token = Object();
+
+  static AuthenticationPlatform? _instance;
+
+  static AuthenticationPlatform get instance {
+    if (_instance != null) {
+      return _instance!;
+    }
+
+    throw AssertionError('AuthenticationPlatform.instance has not been set.');
+  }
+
+  static set instance(AuthenticationPlatform instance) {
+    PlatformInterface.verifyToken(instance, _token);
+
+    _instance = instance;
+  }
 
   AuthenticationPlatform logging({required bool enabled}) {
     throw UnimplementedError('logging() has not been implemented.');

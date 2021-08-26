@@ -1,18 +1,33 @@
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
-import '../credentials/credentials.dart';
+import '../models/auth0_app.dart';
+import '../models/credentials.dart';
 
 // String values: token, id_token, code
 enum ResponseType { token, idToken, code }
 
 abstract class WebAuthPlatform extends PlatformInterface {
-  final String clientId;
-  final String domain;
+  final Auth0App app;
 
-  WebAuthPlatform({required this.clientId, required this.domain})
-      : super(token: _token);
+  WebAuthPlatform({required this.app}) : super(token: _token);
 
   static final Object _token = Object();
+
+  static WebAuthPlatform? _instance;
+
+  static WebAuthPlatform get instance {
+    if (_instance != null) {
+      return _instance!;
+    }
+
+    throw AssertionError('WebAuthPlatform.instance has not been set.');
+  }
+
+  static set instance(WebAuthPlatform instance) {
+    PlatformInterface.verifyToken(instance, _token);
+
+    _instance = instance;
+  }
 
   /// Turn on/off Auth0.swift debug logging of HTTP requests and OAuth2 flow (iOS only).
   WebAuthPlatform logging({required bool enabled}) {
