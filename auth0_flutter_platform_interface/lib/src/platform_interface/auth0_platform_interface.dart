@@ -15,10 +15,10 @@ class Auth0Platform extends PlatformInterface {
 
   Auth0Platform._({required this.app}) : super(token: _token);
 
-  static void initialize({required Auth0App options}) {
-    if (_instance == null) {
-      _instance = Auth0Platform._(app: options);
-    }
+  static Auth0Platform initialize({required Auth0App options}) {
+    final instance = _instance ?? Auth0Platform._(app: options);
+
+    return instance;
   }
 
   static final Object _token = Object();
