@@ -1,6 +1,7 @@
 name: auth0_flutter
 description: A new flutter plugin project.
 version: 2.1.3
+publish_to: none
 
 environment:
   sdk: '>=2.12.0 <3.0.0'
@@ -19,7 +20,12 @@ flutter:
 dependencies:
   flutter:
     sdk: flutter
-  auth0_flutter_platform_interface: ^1.0.0
+  auth0_platform_interface:
+    path: ../auth0_flutter_platform_interface
+    # git:
+    #   url: git@github.com:jlalvarez18/auth0_flutter.git
+    #   ref: web
+    #   path: auth0_flutter_platform_interface
 
 dev_dependencies:
   flutter_test:

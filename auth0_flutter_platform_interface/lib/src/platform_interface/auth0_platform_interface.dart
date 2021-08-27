@@ -1,3 +1,4 @@
+import 'package:auth0_platform_interface/auth0_platform_interface.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import '../method_channel/authentication_method_channel.dart';
@@ -42,33 +43,21 @@ class Auth0Platform extends PlatformInterface {
   ///
   /// Defaults to [WebAuthMethodChannel].
   WebAuthPlatform webAuth() {
-    final instance = WebAuthMethodChannel(app: app);
-
-    WebAuthPlatform.instance = instance;
-
-    return instance;
+    throw UnimplementedError('webAuth() has not been implemented.');
   }
 
   /// The default instance of [AuthenticationPlatform] to use.
   ///
   /// Defaults to [AuthenticationMethodChannel].
   AuthenticationPlatform authentication() {
-    final instance = AuthenticationMethodChannel(app: app);
-
-    AuthenticationPlatform.instance = instance;
-
-    return instance;
+    throw UnimplementedError('authentication() has not been implemented.');
   }
 
   /// The default instance of [UsersPlatform] to use.
   ///
   /// Defaults to [UsersMethodChannel].
   UsersPlatform users({required String token}) {
-    final instance = UsersMethodChannel(token: token, app: app);
-
-    UsersPlatform.instance = instance;
-
-    return instance;
+    throw UnimplementedError('users() has not been implemented.');
   }
 
   /// The default instance of [CredentialsManagerPlatform] to use.
@@ -77,13 +66,6 @@ class Auth0Platform extends PlatformInterface {
   CredentialsManagerPlatform credentialsManager({
     String? storeKey = 'credentials',
   }) {
-    final credentialsManager = CredentialsManagerMethodChannel(
-      app: app,
-      storeKey: storeKey,
-    );
-
-    CredentialsManagerPlatform.instance = credentialsManager;
-
-    return credentialsManager;
+    throw UnimplementedError('credentialsManager() has not been implemented.');
   }
 }

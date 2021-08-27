@@ -69,7 +69,7 @@ class _MyAppState extends State<MyApp> {
 
       await _credManager.enableBiometrics(
         title: "Secure all the things",
-        options: options,
+        auth0options: options,
       );
 
       creds = await _credManager.getCredentials();

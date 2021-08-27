@@ -1,37 +1,22 @@
-library auth0_flutter;
+import 'package:auth0_platform_interface/auth0_platform_interface.dart';
 
-import 'dart:async';
-import 'dart:io';
-
-import 'package:flutter/services.dart';
-
-part 'src/authentication.dart';
-part 'src/credentials_error.dart';
-part 'src/credentials_manager.dart';
-part 'src/user_patch_attributes.dart';
-part 'src/users.dart';
-part 'src/users_error.dart';
-part 'src/web_auth.dart';
+import 'src/credentials_manager.dart';
 
 class Auth0 {
-  final String clientId;
-  final String domain;
+  final Auth0App app;
 
-  Auth0({required this.clientId, required this.domain});
-
-  WebAuth webAuth() {
-    return WebAuth._(clientId: clientId, domain: domain);
+  Auth0({required this.app}) {
+    Auth0Platform.instance = Auth0Platform.initialize(options: app);
   }
 
-  Authentication authentication() {
-    return Authentication._(clientId: clientId, domain: domain);
-  }
+  static Auth0Platform get _delegate => Auth0Platform.instance;
 
-  Users users({required String token}) {
-    return Users._(token: token, domain: domain);
-  }
+  WebAuthPlatform webAuth() => _delegate.webAuth();
 
-  CredentialsManager credentialsManager() {
-    return CredentialsManager(clientId: clientId, domain: domain);
-  }
+  AuthenticationPlatform authentication() => _delegate.authentication();
+
+  UsersPlatform users({required String token}) => _delegate.users(token: token);
+
+  CredentialsManager credentialsManager({String? storeKey = 'credentials'}) =>
+      CredentialsManager.instanceFor(app: app, storeKey: storeKey);
 }

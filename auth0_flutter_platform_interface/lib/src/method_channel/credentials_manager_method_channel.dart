@@ -7,15 +7,23 @@ import '../platform_interface/credentials_manager_platform_interface.dart';
 import '../utils/channel_helper.dart';
 import '../utils/channel_methods.dart';
 
-const _channel =
-    const MethodChannel('plugins.auth0_flutter.io/credentials_manager');
-
 class CredentialsManagerMethodChannel extends CredentialsManagerPlatform {
   CredentialsManagerError _errorHandler(PlatformException e) =>
       CredentialsManagerError.from(e);
 
+  final _channel =
+      const MethodChannel('plugins.auth0_flutter.io/credentials_manager');
+
   CredentialsManagerMethodChannel({required Auth0App app, String? storeKey})
       : super(app: app, storeKey: storeKey);
+
+  @override
+  CredentialsManagerPlatform delegateFor({
+    required Auth0App app,
+    String? storeKey,
+  }) {
+    return CredentialsManagerMethodChannel(app: app, storeKey: storeKey);
+  }
 
   /// Enables biometrics (fingerprint, faceId, etc)
   ///
