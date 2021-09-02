@@ -1,128 +1,53 @@
-import 'dart:io';
-
-import 'package:auth0_platform_interface/auth0_platform_interface.dart';
+part of auth0_flutter;
 
 class CredentialsManager {
-  final Auth0App app;
   final String? storeKey;
 
-  CredentialsManager._({required this.app, this.storeKey});
+  CredentialsManager._({this.storeKey});
 
-  static final Map<String, CredentialsManager> _cachedInstances = {};
-
+  // Cached and lazily loaded instance of [CredentialsManagerPlatform] to avoid
+  // creating a [CredentialsManagerMethodChannel] when not needed or creating an
+  // instance with the default app before a user specifies an app.
   CredentialsManagerPlatform? _delegatePackingProperty;
 
   CredentialsManagerPlatform get _delegate {
-    return _delegatePackingProperty ??=
-        CredentialsManagerPlatform.instanceFor(app: app, storeKey: storeKey);
+    _delegatePackingProperty ??=
+        CredentialsManagerPlatform.instanceWith(storeKey: storeKey);
+
+    return _delegatePackingProperty!;
   }
 
-  static CredentialsManager instanceFor({
-    required Auth0App app,
-    String? storeKey,
-  }) {
-    final cacheKey = app.clientId;
+  static String _defaultStoreKey = "default";
+  static Map<String, CredentialsManager> _instances = {};
 
-    if (_cachedInstances.containsKey(cacheKey)) {
-      return _cachedInstances[cacheKey]!;
+  static CredentialsManager instanceWith({String? storeKey}) {
+    final cacheKey = storeKey ?? _defaultStoreKey;
+    if (_instances.containsKey(cacheKey)) {
+      return _instances[cacheKey]!;
     }
 
-    final instance = CredentialsManager._(app: app, storeKey: storeKey);
+    final newInstance = CredentialsManager._(storeKey: storeKey);
 
-    _cachedInstances[cacheKey] = instance;
+    _instances[cacheKey] = newInstance;
 
-    return instance;
+    return newInstance;
   }
 
   Future<bool> enableBiometrics({
     required String title,
     required BiometricsOptions options,
-  }) {
-    return _delegate.enableBiometrics(title: title, options: options.toMap());
-  }
+  }) =>
+      _delegate.enableBiometrics(title: title, options: options.toMap());
 
-  Future<bool> storeCredentials(Credentials credentials) {
-    return _delegate.storeCredentials(credentials);
-  }
+  Future<bool> storeCredentials(Credentials credentials) =>
+      _delegate.storeCredentials(credentials);
 
-  Future<bool> clearCredentials() {
-    return _delegate.clearCredentials();
-  }
+  Future<bool> clearCredentials() => _delegate.clearCredentials();
 
-  Future<bool> revokeCredentials() {
-    return _delegate.revokeCredentials();
-  }
+  Future<bool> revokeCredentials() => _delegate.revokeCredentials();
 
-  Future<bool> hasValidCredentials() {
-    return _delegate.hasValidCredentials();
-  }
+  Future<bool> hasValidCredentials() => _delegate.hasValidCredentials();
 
-  Future<Credentials?> getCredentials({String? scope}) {
-    return _delegate.getCredentials(scope: scope);
-  }
-}
-
-class BiometricsOptions {
-  final IOSBiometricsOptions? _ios;
-  final AndroidBiometricsOptions _android;
-
-  BiometricsOptions({
-    required AndroidBiometricsOptions android,
-    IOSBiometricsOptions? ios,
-  })  : _android = android,
-        _ios = ios;
-
-  Map<String, dynamic> toMap() {
-    final Map<String, dynamic> map = {};
-
-    if (Platform.isIOS) {
-      final iosMap = _ios?.toMap();
-      if (iosMap != null) {
-        map.addAll(iosMap);
-      }
-    }
-
-    if (Platform.isAndroid) {
-      map.addAll(_android.toMap());
-    }
-
-    return map;
-  }
-}
-
-class IOSBiometricsOptions {
-  final String? cancelTitle;
-  final String? fallbackTitle;
-
-  IOSBiometricsOptions({
-    this.cancelTitle,
-    this.fallbackTitle,
-  });
-
-  Map<String, dynamic> toMap() {
-    return {
-      'cancelTitle': cancelTitle,
-      'fallbackTitle': fallbackTitle,
-    };
-  }
-}
-
-class AndroidBiometricsOptions {
-  /// Must be a valid number between 1 an 255
-  final int requestCode;
-
-  /// the text to use as description in the authentication screen. On some Android versions it might not be shown. Passing null will result in using the OS's default value.
-  final String? description;
-
-  AndroidBiometricsOptions({
-    required this.requestCode,
-    this.description,
-  }) : assert(requestCode >= 1 && requestCode <= 255);
-
-  Map<String, dynamic> toMap() {
-    return {
-      'description': description,
-      'requestCode': requestCode,
-    };
-  }
+  Future<Credentials?> getCredentials({String? scope}) =>
+      _delegate.getCredentials(scope: scope);
 }

@@ -1,26 +1,22 @@
+import 'package:auth0_platform_interface/src/method_channel/web_auth_method_channel.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
-import '../models/auth0_app.dart';
 import '../models/credentials.dart';
 
 // String values: token, id_token, code
 enum ResponseType { token, idToken, code }
 
 abstract class WebAuthPlatform extends PlatformInterface {
-  final Auth0App app;
-
-  WebAuthPlatform({required this.app}) : super(token: _token);
+  WebAuthPlatform() : super(token: _token);
 
   static final Object _token = Object();
 
   static WebAuthPlatform? _instance;
 
   static WebAuthPlatform get instance {
-    if (_instance != null) {
-      return _instance!;
-    }
+    _instance ??= WebAuthMethodChannel.instance;
 
-    throw AssertionError('WebAuthPlatform.instance has not been set.');
+    return _instance!;
   }
 
   static set instance(WebAuthPlatform instance) {

@@ -1,19 +1,27 @@
 import 'package:flutter/services.dart';
 
+import '../../auth0_platform_interface.dart';
 import '../errors/users_error.dart';
-import '../models/auth0_app.dart';
 import '../models/user_patch_attributes.dart';
 import '../platform_interface/users_platform_interface.dart';
 import '../utils/channel_helper.dart';
 import '../utils/channel_methods.dart';
 
-const _channel = MethodChannel('plugins.auth0_flutter.io/users');
-
 class UsersMethodChannel extends UsersPlatform {
+  final _channel = MethodChannel('plugins.auth0_flutter.io/users');
+
+  UsersMethodChannel._({required String token}) : super(token: token);
+
+  /// Returns a stub instance to allow the platform interface to access
+  /// the class instance statically.
+  static UsersMethodChannel get instance => UsersMethodChannel._(token: "");
+
   UsersError _errorHandler(PlatformException e) => UsersError.from(e);
 
-  UsersMethodChannel({required String token, required Auth0App app})
-      : super(token: token, app: app);
+  @override
+  UsersMethodChannel delegateWith({required String token}) {
+    return UsersMethodChannel._(token: token);
+  }
 
   @override
   Future<Map<String, dynamic>?> get({
@@ -144,9 +152,11 @@ class UsersMethodChannel extends UsersPlatform {
   }
 
   Map<String, dynamic> _generateArguments(Map<String, dynamic>? other) {
+    final options = Auth0Platform.instance.options;
+
     final args = <String, dynamic>{
       'token': token,
-      'domain': app.domain,
+      'domain': options?.domain,
     };
 
     if (other != null) {

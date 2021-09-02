@@ -55,9 +55,15 @@ class _MyAppState extends State<MyApp> {
       final clientId = 'rB6m3d5LcaVi0zV6wqHvA8xuekDyTNKK';
       final domain = 'cimpress.auth0.com';
 
-      _auth0 = Auth0(clientId: clientId, domain: domain);
+      Auth0.initialize(
+        options: Auth0Options(
+          clientId: clientId,
+          domain: domain,
+        ),
+      );
+
       _credManager = _auth0.credentialsManager();
-      _webAuth = _auth0
+      _webAuth = Auth0.instance
           .webAuth()
           .audience(audience)
           .scope('openid email offline_access');
@@ -69,7 +75,7 @@ class _MyAppState extends State<MyApp> {
 
       await _credManager.enableBiometrics(
         title: "Secure all the things",
-        auth0options: options,
+        options: options,
       );
 
       creds = await _credManager.getCredentials();

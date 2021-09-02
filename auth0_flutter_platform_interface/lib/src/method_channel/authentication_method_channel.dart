@@ -1,7 +1,7 @@
 import 'package:flutter/services.dart';
 
+import '../../auth0_platform_interface.dart';
 import '../errors/authentication_error.dart';
-import '../models/auth0_app.dart';
 import '../models/credentials.dart';
 import '../models/database_user.dart';
 import '../models/profile.dart';
@@ -11,10 +11,15 @@ import '../utils/channel_helper.dart';
 import '../utils/channel_methods.dart';
 import 'web_auth_method_channel.dart';
 
-const _channel = const MethodChannel('plugins.auth0_flutter.io/authentication');
-
 class AuthenticationMethodChannel extends AuthenticationPlatform {
-  AuthenticationMethodChannel({required Auth0App app}) : super(app: app);
+  final _channel =
+      const MethodChannel('plugins.auth0_flutter.io/authentication');
+
+  AuthenticationMethodChannel._() : super();
+
+  static AuthenticationMethodChannel _instance =
+      AuthenticationMethodChannel._();
+  static AuthenticationMethodChannel get instance => _instance;
 
   AuthenticationError _errorHandler(PlatformException e) =>
       AuthenticationError.from(e);
@@ -138,7 +143,7 @@ class AuthenticationMethodChannel extends AuthenticationPlatform {
   }) async {
     final args = _generateArguments({
       'email': email,
-      'type': _passwordlessTypeToString(type),
+      'type': type.stringValue,
       'connection': connection,
       'parameters': parameters,
     });
@@ -181,7 +186,7 @@ class AuthenticationMethodChannel extends AuthenticationPlatform {
   }) async {
     final args = _generateArguments({
       'phoneNumber': phoneNumber,
-      'type': _passwordlessTypeToString(type),
+      'type': type.stringValue,
       'connection': connection
     });
 
@@ -368,13 +373,15 @@ class AuthenticationMethodChannel extends AuthenticationPlatform {
 
   @override
   WebAuthMethodChannel webAuthWithConnection(String connection) {
-    return WebAuthMethodChannel(app: app).connection(connection);
+    return WebAuthMethodChannel.instance.connection(connection);
   }
 
   Map<String, dynamic> _generateArguments(Map<String, dynamic>? other) {
+    final options = Auth0Platform.instance.options;
+
     final args = <String, dynamic>{
-      'clientId': app.clientId,
-      'domain': app.domain,
+      'clientId': options?.clientId,
+      'domain': options?.domain,
       'loggingEnabled': _loggingEnabled,
     };
 
@@ -411,18 +418,5 @@ class AuthenticationMethodChannel extends AuthenticationPlatform {
       arguments: arguments,
       exceptionHandler: _errorHandler,
     );
-  }
-}
-
-String _passwordlessTypeToString(PasswordlessType type) {
-  switch (type) {
-    case PasswordlessType.code:
-      return 'code';
-    case PasswordlessType.link:
-      return 'link';
-    case PasswordlessType.iosLink:
-      return 'link_ios';
-    case PasswordlessType.androidLink:
-      return 'link_android';
   }
 }

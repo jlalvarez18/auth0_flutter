@@ -1,10 +1,10 @@
 library auth0_platform_interface;
 
+export 'src/auth0_options.dart';
 export 'src/errors/authentication_error.dart';
 export 'src/errors/credentials_error.dart';
 export 'src/errors/users_error.dart';
 export 'src/errors/web_auth_error.dart';
-export 'src/models/auth0_app.dart';
 export 'src/models/credentials.dart';
 export 'src/models/database_user.dart';
 export 'src/models/identity.dart';

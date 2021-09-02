@@ -1,30 +1,40 @@
+import 'package:auth0_platform_interface/src/method_channel/authentication_method_channel.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
-import '../models/auth0_app.dart';
 import '../models/credentials.dart';
 import '../models/database_user.dart';
 import '../models/profile.dart';
 import '../models/user_info.dart';
 import '../platform_interface/web_auth_platform_interface.dart';
 
-// String types code, link, link_ios, link_android
 enum PasswordlessType { code, link, iosLink, androidLink }
 
-abstract class AuthenticationPlatform extends PlatformInterface {
-  final Auth0App app;
+extension PasswordlessTypeExt on PasswordlessType {
+  String get stringValue {
+    switch (this) {
+      case PasswordlessType.code:
+        return 'code';
+      case PasswordlessType.link:
+        return 'link';
+      case PasswordlessType.iosLink:
+        return 'link_ios';
+      case PasswordlessType.androidLink:
+        return 'link_android';
+    }
+  }
+}
 
-  AuthenticationPlatform({required this.app}) : super(token: _token);
+abstract class AuthenticationPlatform extends PlatformInterface {
+  AuthenticationPlatform() : super(token: _token);
 
   static final Object _token = Object();
 
   static AuthenticationPlatform? _instance;
 
   static AuthenticationPlatform get instance {
-    if (_instance != null) {
-      return _instance!;
-    }
+    _instance ??= AuthenticationMethodChannel.instance;
 
-    throw AssertionError('AuthenticationPlatform.instance has not been set.');
+    return _instance!;
   }
 
   static set instance(AuthenticationPlatform instance) {
@@ -65,9 +75,9 @@ abstract class AuthenticationPlatform extends PlatformInterface {
 
   Future<DatabaseUser> createUser({
     required String email,
-    String? username,
     required String password,
     required String connection,
+    String? username,
     Map<String, dynamic>? userMetadata,
     Map<String, dynamic>? rootAttributes,
   }) {
@@ -83,9 +93,9 @@ abstract class AuthenticationPlatform extends PlatformInterface {
 
   Future<void> startEmailPasswordless({
     required String email,
+    required Map<String, dynamic> parameters,
     PasswordlessType type = PasswordlessType.code,
     String connection = 'email',
-    required Map<String, dynamic> parameters,
   }) {
     throw UnimplementedError(
         'startEmailPasswordless() has not been implemented.');
@@ -141,8 +151,8 @@ abstract class AuthenticationPlatform extends PlatformInterface {
   Future<Credentials> loginSocial({
     required String token,
     required String connection,
-    String scope = 'openid',
     required Map<String, dynamic> parameters,
+    String scope = 'openid',
   }) async {
     throw AssertionError();
   }

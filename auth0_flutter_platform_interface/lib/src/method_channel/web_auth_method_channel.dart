@@ -7,10 +7,13 @@ import '../platform_interface/web_auth_platform_interface.dart';
 import '../utils/channel_helper.dart';
 import '../utils/channel_methods.dart';
 
-const _channel = const MethodChannel('plugins.auth0_flutter.io/web_auth');
-
 class WebAuthMethodChannel extends WebAuthPlatform {
-  WebAuthMethodChannel({required Auth0App app}) : super(app: app);
+  final _channel = const MethodChannel('plugins.auth0_flutter.io/web_auth');
+
+  WebAuthMethodChannel._() : super();
+
+  static WebAuthMethodChannel _instance = WebAuthMethodChannel._();
+  static WebAuthMethodChannel get instance => _instance;
 
   WebAuthError _errorHandler(PlatformException e) => WebAuthError.from(e);
 
@@ -104,9 +107,11 @@ class WebAuthMethodChannel extends WebAuthPlatform {
   }
 
   Future<Credentials> start() async {
+    final options = Auth0Platform.instance.options;
+
     final args = <String, dynamic>{
-      'clientId': app.clientId,
-      'domain': app.domain,
+      'clientId': options?.clientId,
+      'domain': options?.domain,
       'universalLink': _universalLink,
       'responseType':
           _responseType.map((v) => _responseTypeToString(v)).toList(),
@@ -131,9 +136,11 @@ class WebAuthMethodChannel extends WebAuthPlatform {
   }
 
   Future<bool> clearSession(bool federated) async {
+    final options = Auth0Platform.instance.options;
+
     final arguments = <String, dynamic>{
-      'clientId': app.clientId,
-      'domain': app.domain,
+      'clientId': options?.clientId,
+      'domain': options?.domain,
       'universalLink': _universalLink,
       'federated': federated,
       'scheme': _scheme

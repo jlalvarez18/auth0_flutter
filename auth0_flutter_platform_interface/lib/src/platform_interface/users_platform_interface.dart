@@ -1,31 +1,35 @@
+import 'package:auth0_platform_interface/src/method_channel/users_method_channel.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
-import '../models/auth0_app.dart';
 import '../models/user_patch_attributes.dart';
 
 abstract class UsersPlatform extends PlatformInterface {
   final String token;
-  final Auth0App app;
 
-  UsersPlatform({required this.token, required this.app})
-      : super(token: _token);
+  UsersPlatform({required this.token}) : super(token: _token);
 
   static final Object _token = Object();
 
   static UsersPlatform? _instance;
 
   static UsersPlatform get instance {
-    if (_instance != null) {
-      return _instance!;
-    }
+    _instance ??= UsersMethodChannel.instance;
 
-    throw AssertionError('UsersPlatform.instance has not been set.');
+    return _instance!;
   }
 
   static set instance(UsersPlatform instance) {
     PlatformInterface.verifyToken(instance, _token);
 
     _instance = instance;
+  }
+
+  factory UsersPlatform.instanceWith({required String token}) {
+    return UsersPlatform.instance.delegateWith(token: token);
+  }
+
+  UsersMethodChannel delegateWith({required String token}) {
+    throw UnimplementedError('delegateWith() has not been implemented.');
   }
 
   Future<Map<String, dynamic>?> get({

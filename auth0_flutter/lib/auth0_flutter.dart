@@ -1,22 +1,24 @@
+library auth0_flutter;
+
+import 'dart:io';
+
 import 'package:auth0_platform_interface/auth0_platform_interface.dart';
+import 'package:flutter/widgets.dart';
 
-import 'src/credentials_manager.dart';
+export 'package:auth0_platform_interface/auth0_platform_interface.dart'
+    show
+        Credentials,
+        Auth0Options,
+        AuthenticationError,
+        UsersError,
+        WebAuthError,
+        WebAuthErrorType,
+        CredentialErrorType,
+        CredentialsManagerError;
 
-class Auth0 {
-  final Auth0App app;
-
-  Auth0({required this.app}) {
-    Auth0Platform.instance = Auth0Platform.initialize(options: app);
-  }
-
-  static Auth0Platform get _delegate => Auth0Platform.instance;
-
-  WebAuthPlatform webAuth() => _delegate.webAuth();
-
-  AuthenticationPlatform authentication() => _delegate.authentication();
-
-  UsersPlatform users({required String token}) => _delegate.users(token: token);
-
-  CredentialsManager credentialsManager({String? storeKey = 'credentials'}) =>
-      CredentialsManager.instanceFor(app: app, storeKey: storeKey);
-}
+part 'src/auth0.dart';
+part 'src/authentication.dart';
+part 'src/biometrics_options.dart';
+part 'src/credentials_manager.dart';
+part 'src/users.dart';
+part 'src/web_auth.dart';
