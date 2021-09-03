@@ -33,8 +33,16 @@ class CredentialsManagerController: NSObject, FlutterPlugin {
             return manager
         }
         
+        let auth: Authentication
+        
+        if let options = Auth0Controller.options {
+            auth = authentication(clientId: options.clientId, domain: options.domain)
+        } else {
+            auth = authentication()
+        }
+        
         let managerArgs = try CredentialsManagerArguments.decode(data: data)
-        let auth = authentication(clientId: managerArgs.clientId, domain: managerArgs.domain)
+        
         let manager = CredentialsManager(authentication: auth, storeKey: managerArgs.storeKey ?? "credentials")
         
         self.credsManager = manager
@@ -113,8 +121,6 @@ class CredentialsManagerController: NSObject, FlutterPlugin {
 }
 
 private struct CredentialsManagerArguments: Decodable {
-    let clientId: String
-    let domain: String
     let storeKey: String?
 }
 

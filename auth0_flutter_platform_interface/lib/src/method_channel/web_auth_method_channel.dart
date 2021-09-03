@@ -107,11 +107,7 @@ class WebAuthMethodChannel extends WebAuthPlatform {
   }
 
   Future<Credentials> start() async {
-    final options = Auth0Platform.instance.options;
-
     final args = <String, dynamic>{
-      'clientId': options?.clientId,
-      'domain': options?.domain,
       'universalLink': _universalLink,
       'responseType':
           _responseType.map((v) => _responseTypeToString(v)).toList(),
@@ -136,11 +132,7 @@ class WebAuthMethodChannel extends WebAuthPlatform {
   }
 
   Future<bool> clearSession(bool federated) async {
-    final options = Auth0Platform.instance.options;
-
     final arguments = <String, dynamic>{
-      'clientId': options?.clientId,
-      'domain': options?.domain,
       'universalLink': _universalLink,
       'federated': federated,
       'scheme': _scheme

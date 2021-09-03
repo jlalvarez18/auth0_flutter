@@ -74,9 +74,6 @@ class WebAuthController: NSObject, FlutterPlugin {
 }
 
 private struct WebAuthArguments: Decodable {
-    let clientId: String
-    let domain: String
-    
     let universalLink: Bool
     let responseType: [String]
     let nonce: String?
@@ -85,7 +82,13 @@ private struct WebAuthArguments: Decodable {
     let loggingEnabled: Bool
     
     func webAuth() -> WebAuth {
-        let auth = Auth0.webAuth(clientId: self.clientId, domain: self.domain)
+        let auth: WebAuth
+        
+        if let options = Auth0Controller.options {
+            auth = Auth0.webAuth(clientId: options.clientId, domain: options.domain)
+        } else {
+            auth = Auth0.webAuth()
+        }
         
         if loggingEnabled {
             _ = auth.logging(enabled: loggingEnabled)

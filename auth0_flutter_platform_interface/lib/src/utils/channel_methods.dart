@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 class Auth0Method {
-  static const getPlatformVersion = 'getPlatformVersion';
+  static const initialize = 'initialize';
 
   Auth0Method._();
 }

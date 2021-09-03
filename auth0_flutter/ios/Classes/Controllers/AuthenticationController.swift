@@ -49,7 +49,13 @@ class AuthenticationController: NSObject, FlutterPlugin {
             let data = try JSONSerialization.data(withJSONObject: arguments, options: [])
             let authParams = try AuthParameters.decode(data: data)
             
-            let auth = authentication(clientId: authParams.clientId, domain: authParams.domain)
+            let auth: Authentication
+            
+            if let options = Auth0Controller.options {
+                auth = authentication(clientId: options.clientId, domain: options.domain)
+            } else {
+                auth = authentication()
+            }
             
             if authParams.loggingEnabled {
                 _ = auth.logging(enabled: authParams.loggingEnabled)
@@ -267,8 +273,6 @@ class AuthenticationController: NSObject, FlutterPlugin {
 }
 
 private struct AuthParameters: Decodable {
-    let clientId: String
-    let domain: String
     let loggingEnabled: Bool
 }
 

@@ -377,11 +377,7 @@ class AuthenticationMethodChannel extends AuthenticationPlatform {
   }
 
   Map<String, dynamic> _generateArguments(Map<String, dynamic>? other) {
-    final options = Auth0Platform.instance.options;
-
     final args = <String, dynamic>{
-      'clientId': options?.clientId,
-      'domain': options?.domain,
       'loggingEnabled': _loggingEnabled,
     };
 

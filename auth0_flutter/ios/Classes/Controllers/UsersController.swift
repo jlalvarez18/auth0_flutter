@@ -36,7 +36,13 @@ class UsersController: NSObject, FlutterPlugin {
             let data = try JSONSerialization.data(withJSONObject: args, options: [])
             let usersArgs = try UsersArguments.decode(data: data)
             
-            let usersManagement = users(token: usersArgs.token, domain: usersArgs.domain)
+            let usersManagement: Users
+            
+            if let options = Auth0Controller.options {
+                usersManagement = users(token: usersArgs.token, domain: options.domain)
+            } else {
+                usersManagement = users(token: usersArgs.token)
+            }
                 
             switch method {
             case .get:
@@ -113,7 +119,6 @@ class UsersController: NSObject, FlutterPlugin {
 
 private struct UsersArguments: Decodable {
     let token: String
-    let domain: String
 }
 
 private struct GetArguments: Decodable {

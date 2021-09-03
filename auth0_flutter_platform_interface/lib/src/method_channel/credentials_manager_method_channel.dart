@@ -132,12 +132,6 @@ class CredentialsManagerMethodChannel extends CredentialsManagerPlatform {
   }
 
   Map<String, dynamic> _generateArguments() {
-    final options = Auth0Platform.instance.options;
-
-    return {
-      'clientId': options?.clientId,
-      'domain': options?.domain,
-      'storeKey': storeKey,
-    };
+    return {'storeKey': storeKey};
   }
 }

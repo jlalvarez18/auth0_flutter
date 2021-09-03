@@ -152,12 +152,7 @@ class UsersMethodChannel extends UsersPlatform {
   }
 
   Map<String, dynamic> _generateArguments(Map<String, dynamic>? other) {
-    final options = Auth0Platform.instance.options;
-
-    final args = <String, dynamic>{
-      'token': token,
-      'domain': options?.domain,
-    };
+    final args = <String, dynamic>{'token': token};
 
     if (other != null) {
       args.addAll(other);

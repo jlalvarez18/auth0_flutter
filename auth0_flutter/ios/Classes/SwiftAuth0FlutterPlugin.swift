@@ -27,6 +27,7 @@ public class SwiftAuth0FlutterPlugin: NSObject, FlutterPlugin {
         let instance = SwiftAuth0FlutterPlugin()
         registrar.addApplicationDelegate(instance)
         
+        Auth0Controller.register(with: registrar)
         WebAuthController.register(with: registrar)
         AuthenticationController.register(with: registrar)
         CredentialsManagerController.register(with: registrar)

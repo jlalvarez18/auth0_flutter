@@ -19,9 +19,8 @@ class Auth0 {
     return delegatePackingProperty ??= Auth0Platform.instance;
   }
 
-  static void initialize({Auth0Options? options}) {
-    Auth0Platform.initialize(options: options);
-  }
+  static Future<void> initialize({Auth0Options? options}) async =>
+      _delegate.initialize(options: options);
 
   Auth0Options? get options => _delegate.options;
 
