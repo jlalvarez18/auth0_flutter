@@ -4,6 +4,7 @@ import android.os.Handler;
 import android.os.Looper;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.auth0.android.Auth0;
 import com.auth0.android.callback.Callback;
@@ -19,31 +20,40 @@ import java.util.HashMap;
 import java.util.List;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin.FlutterPluginBinding;
+import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 
-public class UsersController implements MethodCallHandler {
+public class UsersController extends ActivityBindingController implements MethodCallHandler {
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
-    static void registerWith(FlutterPluginBinding binding) {
+    static UsersController registerWith(FlutterPluginBinding binding) {
         final MethodChannel channel = new MethodChannel(binding.getBinaryMessenger(), "plugins.auth0_flutter.io/users");
 
-        channel.setMethodCallHandler(new UsersController());
+        final UsersController instance = new UsersController();
+
+        channel.setMethodCallHandler(instance);
+
+        return instance;
     }
 
     @Override
-    public void onMethodCall(MethodCall call, @NonNull final Result result) {
-        final String clientId = call.argument("clientId");
-        final String domain = call.argument("domain");
+    public void onMethodCall(@NonNull MethodCall call, @NonNull final Result result) {
+        final ActivityPluginBinding binding = getActivityBinding();
+
+        if (binding == null) {
+            result.error("", "Missing activity.", null);
+            return;
+        }
+
         final String token = call.argument("token");
 
-        assert clientId != null;
-        assert domain != null;
         assert token != null;
 
-        final Auth0 auth0 = new Auth0(clientId, domain);
+        final Auth0 auth0 = Auth0Controller.auth0(binding);
+
         UsersAPIClient apiClient = new UsersAPIClient(auth0, token);
 
         switch (call.method) {

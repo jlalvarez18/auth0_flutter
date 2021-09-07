@@ -27,14 +27,8 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
 
-public class WebAuthController implements MethodCallHandler {
+public class WebAuthController extends ActivityBindingController implements MethodCallHandler {
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
-
-    private ActivityPluginBinding _activityBinding;
-
-    public void setActivityBinding(@Nullable ActivityPluginBinding activityBinding) {
-        this._activityBinding = activityBinding;
-    }
 
     static WebAuthController registerWith(@NonNull FlutterPluginBinding binding) {
         final WebAuthController controller = new WebAuthController();
@@ -47,19 +41,20 @@ public class WebAuthController implements MethodCallHandler {
 
     @Override
     public void onMethodCall(@NonNull MethodCall methodCall, @NonNull final Result result) {
-        final String clientId = methodCall.argument("clientId");
-        final String domain = methodCall.argument("domain");
+        final ActivityPluginBinding binding = getActivityBinding();
 
-        assert clientId != null;
-        assert domain != null;
+        if (binding == null) {
+            result.error("", "Missing activity.", null);
+            return;
+        }
 
-        final Auth0 auth0 = new Auth0(clientId, domain);
+        final Auth0 auth0 = Auth0Controller.auth0(binding);
 
         switch (methodCall.method) {
             case WebAuthMethodName.start: {
                 final WebAuthProvider.Builder webAuth = webAuth(auth0, methodCall);
 
-                webAuth.start(_activityBinding.getActivity(), new Callback<Credentials, AuthenticationException>() {
+                webAuth.start(binding.getActivity(), new Callback<Credentials, AuthenticationException>() {
                     @Override
                     public void onSuccess(Credentials credentials) {
                         final HashMap<String, Object> obj = JSONHelpers.credentialsToJSON(credentials);
@@ -96,7 +91,7 @@ public class WebAuthController implements MethodCallHandler {
                     builder.withScheme(scheme);
                 }
 
-                builder.start(_activityBinding.getActivity(), new Callback<Void, AuthenticationException>() {
+                builder.start(binding.getActivity(), new Callback<Void, AuthenticationException>() {
                     @Override
                     public void onSuccess(Void unused) {
                         mainHandler.post(new Runnable() {

@@ -28,14 +28,8 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry;
 
-public class CredentialsController implements MethodCallHandler {
+public class CredentialsController extends ActivityBindingController implements MethodCallHandler {
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
-
-    private @Nullable ActivityPluginBinding _activityBinding;
-
-    public void setActivityBinding(@Nullable ActivityPluginBinding binding) {
-        this._activityBinding = binding;
-    }
 
     static CredentialsController registerWith(FlutterPlugin.FlutterPluginBinding binding) {
         final CredentialsController controller = new CredentialsController();
@@ -48,12 +42,14 @@ public class CredentialsController implements MethodCallHandler {
 
     @Override
     public void onMethodCall(@NonNull MethodCall methodCall, @NonNull final Result result) {
-        if (_activityBinding == null) {
+        final ActivityPluginBinding binding = getActivityBinding();
+
+        if (binding == null) {
             result.error("", "Missing activity.", null);
             return;
         }
 
-        final SecureCredentialsManager manager = getCredentialsManager(methodCall, _activityBinding);
+        final SecureCredentialsManager manager = getCredentialsManager(methodCall, binding);
 
         switch (methodCall.method) {
             case CredentialsMethodName.enableBioMetrics: {
@@ -61,7 +57,7 @@ public class CredentialsController implements MethodCallHandler {
 
                 assert requestCode != null;
 
-                _activityBinding.addActivityResultListener(new PluginRegistry.ActivityResultListener() {
+                binding.addActivityResultListener(new PluginRegistry.ActivityResultListener() {
                     @Override
                     public boolean onActivityResult(final int requestCode, final int resultCode, Intent intent) {
                         return manager.checkAuthenticationResult(requestCode, resultCode);
@@ -71,7 +67,7 @@ public class CredentialsController implements MethodCallHandler {
                 final String title = methodCall.argument("title");
                 final String description = methodCall.argument("description");
 
-                final boolean success = manager.requireAuthentication(_activityBinding.getActivity(), requestCode, title, description);
+                final boolean success = manager.requireAuthentication(binding.getActivity(), requestCode, title, description);
 
                 result.success(success);
 
@@ -158,15 +154,17 @@ public class CredentialsController implements MethodCallHandler {
     }
 
     private static SecureCredentialsManager getCredentialsManager(@NonNull MethodCall methodCall, @NonNull ActivityPluginBinding binding) {
-        final String clientId = methodCall.argument("clientId");
-        final String domain = methodCall.argument("domain");
-
-        assert clientId != null;
-        assert domain != null;
-
-        final Auth0 auth0 = new Auth0(clientId, domain);
-
         final Context context = binding.getActivity();
+
+        final Auth0 auth0;
+        if (Auth0Controller.options != null) {
+            final String clientId = Auth0Controller.options.clientId;
+            final String domain = Auth0Controller.options.domain;
+
+            auth0 = new Auth0(clientId, domain);
+        } else {
+            auth0 = new Auth0(context);
+        }
 
         final AuthenticationAPIClient apiClient = new AuthenticationAPIClient(auth0);
         final SharedPreferencesStorage storage = new SharedPreferencesStorage(context);
